@@ -29,6 +29,13 @@ in
       type = types.str;
       example = "users";
     };
+
+    deviceName = mkOption {
+      description = lib.mdDoc "Sxmo device profile name.";
+      type = types.str;
+      default = "desktop";
+      example = "vlenovo";
+    };
   };
 
   # --- CONFIGURATION ---
@@ -65,6 +72,7 @@ in
     systemd.services.sxmo = {
       description = "Sxmo graphical session";
       wantedBy = [ "graphical.target" ];
+      environment.SXMO_DEVICE_NAME = cfg.deviceName;
       
       # This service conflicts with any getty service on tty7.
       conflicts = [ "getty@tty7.service" ];

@@ -3,3 +3,4 @@ result-*
 .direnv/
 .env
 .DS_Store
+debug/

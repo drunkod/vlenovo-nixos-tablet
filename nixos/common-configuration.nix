@@ -12,6 +12,9 @@
   nix.settings = {
     experimental-features = "nix-command flakes";
     auto-optimise-store = true;
+    # This tablet has only 2 GiB RAM. Keep local builds from saturating memory.
+    max-jobs = 1;
+    cores = 1;
   };
 
   # Bootloader (will be used by the real build)
@@ -26,9 +29,35 @@
     "systemd.mask=systemd-vconsole-setup.service"
     "systemd.mask=dev-tpmrm0.device" #this is to mask that stupid 1.5 mins systemd bug
   ];
+
+  # Low-memory profile: prefer compressed RAM over slow eMMC swap.
+  zramSwap = {
+    enable = true;
+    memoryPercent = 50;
+    algorithm = "zstd";
+    priority = 100;
+  };
+  boot.kernel.sysctl."vm.swappiness" = 100;
+
+  # Bound persistent logs and crash dumps so a faulty monitor cannot fill the
+  # eMMC or spend minutes compressing thousands of cores again.
+  services.journald.extraConfig = ''
+    SystemMaxUse=128M
+    RuntimeMaxUse=64M
+    MaxRetentionSec=7day
+  '';
+  systemd.coredump.extraConfig = ''
+    Storage=external
+    MaxUse=128M
+    KeepFree=1G
+  '';
   # Common settings for both real and test builds
   networking.hostName = "vlenovo";
   networking.networkmanager.enable = true;
+
+  # Sxmo battery/audio monitors expect system services on NixOS.
+  services.upower.enable = true;
+  services.pulseaudio.enable = true;
 
   # Bluetooth keyboard support.
   hardware.bluetooth = {
@@ -53,6 +82,7 @@
     enable = true;
     user = "alex";
     group = "users";
+    deviceName = "vlenovo";
   };
 
   # Systemd overrides
