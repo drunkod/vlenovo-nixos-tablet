@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+HOST="${VLENOVO_HOST:-10.230.221.139}"
+USER_NAME="${VLENOVO_USER:-alex}"
+REMOTE_DIR="${VLENOVO_REMOTE_DIR:-/home/${USER_NAME}/vlenovo-dev}"
+IDENTITY="${VLENOVO_IDENTITY:-$HOME/.ssh/id_ed25519}"
+TARGET="${USER_NAME}@${HOST}"
+
+SSH_OPTS=(-i "$IDENTITY" -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new)
+
+ssh_tablet() {
+  ssh "${SSH_OPTS[@]}" "$TARGET" "$@"
+}
+
+sync_repo() {
+  echo "==> Syncing $ROOT -> $TARGET:$REMOTE_DIR"
+  ssh_tablet "mkdir -p '$REMOTE_DIR'"
+  rsync -az --delete \
+    --exclude '.git' --exclude 'result' \
+    -e "ssh -i '$IDENTITY' -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new" \
+    "$ROOT/" "$TARGET:$REMOTE_DIR/"
+}
+
+usage() {
+  cat <<'EOF'
+Usage: ./bin/vlenovo COMMAND [ARGS]
+
+  ssh                 interactive SSH shell
+  sync                sync repo to the tablet only
+  build               sync + nixos-rebuild build
+  test                sync + temporary activation
+  switch              sync + persistent activation
+  boot                sync + set next boot generation
+  rollback            return runtime to /run/booted-system
+  status              show system, network, SSH, Bluetooth, Sxmo
+  logs SERVICE        follow recent logs for a systemd service
+  bluetooth           open interactive bluetoothctl on tablet
+
+Override address with VLENOVO_HOST, e.g.:
+  VLENOVO_HOST=10.0.0.50 ./bin/vlenovo status
+EOF
+}
+
+cmd="${1:-help}"
+shift || true
+
+case "$cmd" in
+  ssh)
+    exec ssh "${SSH_OPTS[@]}" "$TARGET"
+    ;;
+  sync)
+    sync_repo
+    ;;
+  build|test|switch|boot)
+    sync_repo
+    echo "==> nixos-rebuild $cmd"
+    ssh -t "${SSH_OPTS[@]}" "$TARGET" \
+      "cd '$REMOTE_DIR' && sudo nixos-rebuild '$cmd' --flake .#vlenovo"
+    ;;
+  rollback)
+    ssh -t "${SSH_OPTS[@]}" "$TARGET" \
+      'sudo /run/booted-system/bin/switch-to-configuration test'
+    ;;
+  status)
+    ssh_tablet 'echo "CURRENT=$(readlink -f /run/current-system)"; echo "BOOTED=$(readlink -f /run/booted-system)"; echo; systemctl --failed --no-pager; echo; nmcli -t -f DEVICE,TYPE,STATE,CONNECTION device status; echo; systemctl is-active sshd NetworkManager sxmo bluetooth; echo; bluetoothctl show 2>/dev/null | grep -E "Name:|Powered:|Pairable:" || true'
+    ;;
+  logs)
+    service="${1:?service name required, e.g. sxmo}"
+    exec ssh -t "${SSH_OPTS[@]}" "$TARGET" \
+      "sudo journalctl -u '$service' -b -n 200 -f"
+    ;;
+  bluetooth)
+    exec ssh -t "${SSH_OPTS[@]}" "$TARGET" bluetoothctl
+    ;;
+  help|-h|--help)
+    usage
+    ;;
+  *)
+    echo "Unknown command: $cmd" >&2
+    usage >&2
+    exit 2
+    ;;
+esac

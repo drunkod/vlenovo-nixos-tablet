@@ -1,0 +1,12 @@
+diff --git a/Makefile b/Makefile
+index acfde9f..b1bc216 100644
+--- a/Makefile
++++ b/Makefile
+@@ -149,7 +149,6 @@ install-scripts: $(PROGRAMS)
+ 	install -D -t $(DESTDIR)$(PREFIX)/bin scripts/*/*.sh
+ 
+ 	install -t $(DESTDIR)$(PREFIX)/bin/ ${PROGRAMS}
+-	setcap 'cap_wake_alarm=ep' $(DESTDIR)$(PREFIX)/bin/sxmo_sleep
+ 
+ 	find $(DESTDIR)$(PREFIX)/share/sxmo/default_hooks/ -type f -exec ./setup_config_version.sh "{}" \;
+ 	find $(DESTDIR)$(PREFIX)/share/sxmo/appcfg/ -type f -exec ./setup_config_version.sh "{}" \;

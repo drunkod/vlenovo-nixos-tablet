@@ -1,0 +1,18 @@
+--- a/Makefile
++++ b/Makefile
+@@ -1,13 +1,8 @@
+ 
+ 	cd resources && find . -type f -exec install -D -m 0644 "{}" "$(DESTDIR)$(PREFIX)/share/sxmo/{}" \; && cd ..
+ 
+-	install -D -m 0644 -t $(DESTDIR)$(PREFIX)/lib/udev/rules.d/ configs/udev/*.rules
+-
+-	install -D -m 0644 -t $(DESTDIR)$(PREFIX)/share/applications/ configs/xdg/mimeapps.list
+-
+-	install -D -m 0644 -t $(DESTDIR)$(SYSCONFDIR)/polkit-1/rules.d/ configs/polkit/01-sensor-claim.rules
+-
+-	install -D -m 0640 -t $(DESTDIR)$(SYSCONFDIR)/doas.d/ configs/doas/sxmo.conf
++	# Install doas config to share directory instead of /etc
++	install -D -m 0644 configs/doas/sxmo.conf $(DESTDIR)$(PREFIX)/share/sxmo/configs/doas/sxmo.conf
+ 
+ 	install -D -m 0644 -T configs/xorg/monitor.conf $(DESTDIR)$(PREFIX)/share/X11/xorg.conf.d/90-monitor.conf
+ 
