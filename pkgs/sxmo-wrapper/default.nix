@@ -52,6 +52,49 @@ sxmo-utils-unwrapped.overrideAttrs (oldAttrs: {
 substituteInPlace configs/appcfg/sway_template \
   --replace "exec sxmo_hook_start.sh" "exec ${placeholder "out"}/share/sxmo/default_hooks/sxmo_hook_start.sh"
 
+# The tablet's physical Windows-logo button is KEY_LEFTMETA on the gpio-keys
+# input device. Install this binding before the desktop profile's early exit,
+# so it remains available even though SXMO_DISABLE_KEYBINDS=1.
+substituteInPlace scripts/core/sxmo_swayinitconf.sh \
+  --replace 'if [ -n "$SXMO_DISABLE_KEYBINDS" ]; then' 'swaymsg -- bindsym --release --input-device="1:1:gpio-keys" Super_L exec ${placeholder "out"}/bin/vlenovo-osk-toggle
+
+if [ -n "$SXMO_DISABLE_KEYBINDS" ]; then'
+
+  '';
+
+  postInstall = (oldAttrs.postInstall or "") + ''
+    cat > "$out/bin/vlenovo-osk-toggle" <<'EOF'
+#!/bin/sh
+set -u
+
+LOG="''${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/vlenovo-osk.log"
+LOCK="''${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/vlenovo-osk.lock"
+
+if ! mkdir "$LOCK" 2>/dev/null; then
+  exit 0
+fi
+trap 'rmdir "$LOCK" 2>/dev/null || true' EXIT HUP INT TERM
+
+{
+  printf '%s key action\n' "$(date -Ins)"
+  if ${pkgs.procps}/bin/pgrep -x wvkbd-mobintl >/dev/null 2>&1; then
+    echo "closing existing wvkbd"
+    ${pkgs.procps}/bin/pkill -x wvkbd-mobintl || true
+    exit 0
+  fi
+
+  echo "opening wvkbd"
+  ${pkgs.wvkbd}/bin/wvkbd-mobintl >> "$LOG" 2>&1 &
+  pid=$!
+  sleep 0.4
+  if kill -0 "$pid" 2>/dev/null; then
+    echo "wvkbd started pid=$pid"
+  else
+    echo "wvkbd failed pid=$pid"
+  fi
+} >> "$LOG" 2>&1
+EOF
+    chmod 755 "$out/bin/vlenovo-osk-toggle"
   '';
 
   meta = sxmo-utils-unwrapped.meta // {

@@ -13,6 +13,7 @@ This repository is intentionally rooted at the old `vlenovo/` directory, so the 
 - OpenSSH with key-only login
 - Bluetooth enabled and powered at boot
 - Bluetooth HID keyboard tested successfully
+- Tablet Windows-logo hardware button toggles the on-screen keyboard
 - Passwordless sudo for the `wheel` group
 
 ## Safe remote workflow
@@ -37,6 +38,8 @@ If the test behaves correctly, make it persistent:
 For the complete laptop-to-tablet development and debugging guide, see [docs/REMOTE_DEVELOPMENT.md](docs/REMOTE_DEVELOPMENT.md).
 
 For Bluetooth keyboard pairing and recovery, see [docs/BLUETOOTH.md](docs/BLUETOOTH.md).
+
+For the tablet Windows-logo button and on-screen keyboard mapping, see [docs/HARDWARE_BUTTONS.md](docs/HARDWARE_BUTTONS.md).
 
 ## Flake entry points
 
