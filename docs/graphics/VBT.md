@@ -35,6 +35,13 @@ The VBT's preferred panel timing is:
 
 The live i915 connector reports physical dimensions 216x135 mm.
 
+Hans de Goede's long-running x86-tablet hardware inventory independently
+records the Miix 2 10 as a 1920x1200 DSI tablet with 24-bpp display data,
+Crystal Cove PWM backlight, VBT PWM frequency 200, ELAN1001 touchscreen, and
+a haptic-feedback home button. That display/touch description matches this
+unit closely. His inventory lists a Z3740 CPU, while this specific tablet
+reports Z3745, so the CPU entry should not be treated as an exact identity.
+
 The VBT's PnP identity is generic/unhelpful (`MS_`, product 1) and the
 panel name is merely `LFP_PanelName`. Therefore DMI + timing + external
 panel documentation are more useful identifiers than the VBT PnP name.

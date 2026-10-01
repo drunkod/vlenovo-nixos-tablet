@@ -42,6 +42,8 @@ The current upstream source paths most relevant to this tablet are listed in
 
 - Intel Bay Trail graphics developer-reference index:
   https://www.intel.com/content/www/us/en/docs/graphics-for-linux/developer-reference/1-0/bay-trail.html
+- Hans de Goede's x86-tablet hardware inventory (contains a dedicated Miix 2 10 entry):
+  https://github.com/jwrdegoede/sunxi-fedora-scripts/blob/master/x86-tablet-info
 
 The Bay Trail PRM set includes GPU architecture, memory, command-stream,
 3D/media, blitter and display documentation. Use it to understand hardware

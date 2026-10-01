@@ -38,6 +38,12 @@ systems.
 
 The Miix DMI strings do not match those existing Lenovo quirks.
 
+An exact-name search of the upstream Linux commit history finds several
+Miix 2 10 fixes in ASoC/RT5670 audio and i2c-hid/sensor handling, but no
+model-named i915 graphics quirk. This does not prove that no generic
+Valleyview graphics fix ever affected the device, but it is further evidence
+against starting with a Miix-specific graphics patch without a reproduced bug.
+
 ## Post-6.12 Valleyview/DSI fixes screened
 
 ### 2025 MIPI v1/v2 sequence fixup
