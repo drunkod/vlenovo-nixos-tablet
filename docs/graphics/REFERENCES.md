@@ -77,6 +77,15 @@ Existing Lenovo Valleyview DSI quirk examples:
 - Follow-up DMI-match relaxation:
   https://github.com/torvalds/linux/commit/7d058e6bac9afab6a406e34344ebbfd3068bb2d5
 
+Panel cross-checks:
+
+- AUO B101UAN01.7 functional specification (typical 148.35 MHz,
+  1920x1200, 2040x1212 totals):
+  https://www.panelook.com/upload/201409/B101UAN01.7_HW1A_Ver0.2_20130129_201409304892.pdf
+- AMD MIPI-DSI interoperability validation using B101UAN01.7 with four lanes,
+  RGB888 and sync events at 1920x1200@60:
+  https://docs.amd.com/r/en-US/pg238-mipi-dsi-tx/Hardware-Validation
+
 Historical same-family evidence:
 
 - Old Valleyview DSI clock-gating fix later reported to fix panel init on a
@@ -84,6 +93,16 @@ Historical same-family evidence:
   https://github.com/torvalds/linux/commit/721d484563e1a51ada760089c490cbc47e909756
 - 2017 report/backport test on the Miix 2 8:
   https://lists.openwall.net/linux-kernel/2017/02/17/102
+
+Valleyview/Cherryview PSR archaeology (not applicable to this DSI panel):
+
+- Initial VLV/CHV PSR enable path:
+  https://github.com/torvalds/linux/commit/b32c6f482dc56c52169cad7c9d35908c020dd22d
+- Brief default enable and revert after vblank timeout problems:
+  https://github.com/torvalds/linux/commit/a38c274faad0ec6aba692e294ec751d04dbba803
+  https://github.com/torvalds/linux/commit/dcb2e993f3c0cecc6c0d905cbf2e428640a957c1
+- Removal because of known issues, maintenance burden and no CI coverage:
+  https://github.com/torvalds/linux/commit/ce3508fd2a778e9366ab638f4e1dbe6dab874c5b
 
 Post-6.12 changes screened during this research:
 

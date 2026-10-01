@@ -52,6 +52,28 @@ DSI pipe is active. It has been upstream for many years and is already part of
 modern kernels, so it is evidence that i915 is the right driver family, not a
 patch we need to port to Linux 6.12.
 
+## Historical Valleyview PSR is not a Miix DSI target
+
+Upstream briefly carried a distinct Valleyview/Cherryview Panel Self Refresh
+implementation. It was enabled for those platforms in 2014, briefly enabled
+by default in 2016, reverted after vblank timeout problems, and finally removed
+in 2018 by commit `ce3508fd2a77`. The removal cites known issues, maintenance
+burden, and lack of a PSR-capable VLV/CHV system in CI.
+
+More importantly for this tablet, the old enable path was wired through
+`intel_dp` / `vlv_enable_dp`: it was an eDP/DP feature. The Miix internal
+panel is `DSI-1`, not eDP. The current live driver correctly reports
+`has_psr: no`. Restoring the deleted VLV PSR code would therefore be a large,
+risky archaeology project with no demonstrated benefit for this MIPI-DSI
+panel. The Windows INF's generic `FeatureTestControl=0xF000` is not evidence
+that this Miix DSI panel used Linux-style eDP PSR.
+
+Relevant upstream history:
+- `b32c6f482dc5` — add VLV/CHV PSR enable path;
+- `a38c274faad0` — enable VLV/CHV PSR by default;
+- `dcb2e993f3c0` — revert that default after timeouts;
+- `ce3508fd2a77` — remove VLV/CHV PSR support.
+
 ## Post-6.12 Valleyview/DSI fixes screened
 
 ### Late-2024 DSI/VBT cleanups

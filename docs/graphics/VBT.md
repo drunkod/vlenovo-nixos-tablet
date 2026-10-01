@@ -35,6 +35,19 @@ The VBT's preferred panel timing is:
 
 The live i915 connector reports physical dimensions 216x135 mm.
 
+The AUO B101UAN01.7 panel documented for the Miix 2 10 is an unusually strong
+cross-check. Its public specification gives the same typical mode: 148.35 MHz
+pixel clock, 2040 total horizontal pixels, 1212 total vertical lines, and
+1920x1200 at 60 Hz. AMD's current MIPI-DSI interoperability test matrix also
+uses B101UAN01.7 at 1920x1200@60 with four lanes, RGB888, and sync-events mode.
+Those values independently match the Miix VBT almost field-for-field. The VBT
+does not expose the AUO model string, so this is corroboration rather than a
+firmware-derived panel identity.
+
+References:
+- https://www.panelook.com/upload/201409/B101UAN01.7_HW1A_Ver0.2_20130129_201409304892.pdf
+- https://docs.amd.com/r/en-US/pg238-mipi-dsi-tx/Hardware-Validation
+
 Hans de Goede's long-running x86-tablet hardware inventory independently
 records the Miix 2 10 as a 1920x1200 DSI tablet with 24-bpp display data,
 Crystal Cove PWM backlight, VBT PWM frequency 200, ELAN1001 touchscreen, and
