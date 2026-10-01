@@ -21,6 +21,8 @@ FILES=(
   drm-device.txt
   connectors.txt
   glxinfo.txt
+  opengl-driver-dri.txt
+  vainfo.txt
   i915_gpu_info.txt
   i915_display_info.txt
   i915_frequency_info.txt

@@ -45,7 +45,7 @@ For the tablet Windows-logo button and on-screen keyboard mapping, see [docs/HAR
 
 The Bay Trail GPU is already accelerated by Linux `i915` + Mesa Crocus. The graphics work in this repository therefore focuses on reproducible diagnostics, upstream/backport screening, and narrowly scoped fixes rather than replacing i915 with the old Windows driver.
 
-Start with [docs/graphics/GPU-BASELINE.md](docs/graphics/GPU-BASELINE.md) and [docs/graphics/GPU-TEST-PLAN.md](docs/graphics/GPU-TEST-PLAN.md). Firmware/VBT notes are in [docs/graphics/VBT.md](docs/graphics/VBT.md), upstream screening is in [docs/graphics/UPSTREAM.md](docs/graphics/UPSTREAM.md), and the original Lenovo Windows driver is analyzed in [docs/graphics/WINDOWS-REFERENCE.md](docs/graphics/WINDOWS-REFERENCE.md).
+Start with [docs/graphics/GPU-BASELINE.md](docs/graphics/GPU-BASELINE.md) and [docs/graphics/GPU-TEST-PLAN.md](docs/graphics/GPU-TEST-PLAN.md). Firmware/VBT notes are in [docs/graphics/VBT.md](docs/graphics/VBT.md), upstream screening is in [docs/graphics/UPSTREAM.md](docs/graphics/UPSTREAM.md), the original Lenovo Windows driver is analyzed in [docs/graphics/WINDOWS-REFERENCE.md](docs/graphics/WINDOWS-REFERENCE.md), and VA-API/video findings are in [docs/graphics/MEDIA-ACCELERATION.md](docs/graphics/MEDIA-ACCELERATION.md).
 
 On the tablet, enter the diagnostic environment with:
 

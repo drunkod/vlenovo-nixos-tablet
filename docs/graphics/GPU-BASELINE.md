@@ -43,6 +43,15 @@ This proves the tablet is not using llvmpipe or a generic framebuffer for 3D.
 The existing project goal is therefore to improve the upstream i915/Crocus path,
 not to replace it with a port of Lenovo's Windows WDDM driver.
 
+At this baseline, the system graphics-driver path did not contain Intel's
+`i965_drv_video.so`, so VA-API auto-detection failed even though 3D acceleration
+was already healthy. Media acceleration is tracked separately in
+`MEDIA-ACCELERATION.md`.
+
+The live DRM client table also shows Sway opening both the i915 card node and
+`renderD128`; Xwayland also uses the render node. The compositor is therefore
+using the real DRM/GPU stack rather than software-only composition.
+
 ## Live GPU frequency baseline
 
 - Idle frequency: 200 MHz.
@@ -53,14 +62,16 @@ not to replace it with a port of Lenovo's Windows WDDM driver.
 
 ## Short accelerated-load smoke test
 
-A non-vsynced `glxgears` run was used only as a smoke test, not as a
-meaningful comparative benchmark. It rendered about 1809 FPS for one
-five-second interval. During the load, `intel_gpu_top` observed the
-Render/3D engine reaching about 97.5% busy.
+Non-vsynced `glxgears` runs were used only as smoke tests, not as a
+meaningful comparative benchmark. Repeated five-second samples produced
+roughly 1800-2000 FPS. In a six-sample `intel_gpu_top` run the Render/3D
+engine averaged 86.3% busy and peaked at 90.5%; another run reached about
+97.5% busy. Requested GPU frequency averaged about 461 MHz under that load.
 
-Polling `i915_frequency_info` during a second load showed the GPU leaving
-the 200 MHz idle clock and dynamically operating between roughly 422 and
-556 MHz in the sampled interval. After both tests:
+At idle, six `intel_gpu_top` samples reported essentially 100% RC6 residency
+and 0% Render/3D busy. Polling `i915_frequency_info` during load also showed
+the GPU leaving the 200 MHz idle clock and dynamically operating between
+roughly 422 and 556 MHz in the sampled interval. After the tests:
 
 - i915 reset count remained 0;
 - `ERROR` remained `0x00000000`;

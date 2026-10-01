@@ -54,6 +54,15 @@ binary first.
   https://nixos.org/manual/nixos/stable/
 - NixOS model / generations:
   https://nixos.org/guides/how-nix-works/
+- Accelerated video playback:
+  https://wiki.nixos.org/wiki/Accelerated_Video_Playback
+
+## Bay Trail media archaeology
+
+- Preserved Intel Bay Trail EMGD/SNA source drop and patches:
+  https://github.com/jameshilliard/Intel_BYT_SNA64_EMGD_V37.40.25_RC_2015-06-02_3900
+- Its VP8/VXD392/IPVR setup notes:
+  https://github.com/jameshilliard/Intel_BYT_SNA64_EMGD_V37.40.25_RC_2015-06-02_3900/blob/master/patches/common/VA_Driver_i965/VP8/README_VP8_setup.txt
 
 ## Relevant upstream commits
 

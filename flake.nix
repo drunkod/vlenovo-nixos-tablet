@@ -61,14 +61,18 @@
           gdb
           git
           intel-gpu-tools
+          intel-vaapi-driver
           jq
           libdrm
+          libva-utils
           mesa-demos
           pciutils
           strace
         ];
         shellHook = ''
-          echo "vlenovo graphics shell: i915/DRM/Mesa diagnostic tools available"
+          export LIBVA_DRIVER_NAME=i965
+          export LIBVA_DRIVERS_PATH=${pkgs.intel-vaapi-driver}/lib/dri
+          echo "vlenovo graphics shell: i915/DRM/Mesa/VA-API diagnostic tools available"
         '';
       };
 

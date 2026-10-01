@@ -81,6 +81,17 @@ fi
 if have eglinfo; then run_capture eglinfo eglinfo -B; fi
 if have intel_gpu_top; then run_capture intel-gpu-top-list intel_gpu_top -L; fi
 
+# Record the system graphics-driver search path separately from the dev shell.
+# Unset VA overrides so this answers whether the active NixOS generation
+# itself provides a usable VA-API driver.
+if [ -d /run/opengl-driver/lib/dri ]; then
+  ls -l /run/opengl-driver/lib/dri >"$OUT/opengl-driver-dri.txt" 2>&1 || true
+fi
+if have vainfo && [ -e /dev/dri/renderD128 ]; then
+  run_capture vainfo env -u LIBVA_DRIVER_NAME -u LIBVA_DRIVERS_PATH \
+    vainfo --display drm --device /dev/dri/renderD128
+fi
+
 journalctl -b -k --no-pager |
   grep -Ei 'i915|drm|gpu|dsi|mipi|vbt|underrun|hang|reset'   >"$OUT/kernel-gpu-journal.txt" || true
 

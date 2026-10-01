@@ -59,6 +59,12 @@
   services.upower.enable = true;
   services.pulseaudio.enable = true;
 
+  # Bay Trail fixed-function video acceleration. Mesa Crocus already handles
+  # 3D; the legacy i965 VA-API driver provides H.264/MPEG-2/VC-1/JPEG media.
+  hardware.graphics.extraPackages = with pkgs; [
+    intel-vaapi-driver
+  ];
+
   # Bluetooth keyboard support.
   hardware.bluetooth = {
     enable = true;
