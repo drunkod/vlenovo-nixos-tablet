@@ -49,6 +49,29 @@
         pkgs = nixpkgs.legacyPackages.${system};
         pkgsUnstable = inputs.nixpkgs-unstable.legacyPackages.${system};
       });
+
+    # Native graphics-driver research shell for the x86_64 Bay Trail tablet.
+    devShells.x86_64-linux.graphics =
+      let pkgs = nixpkgs.legacyPackages.x86_64-linux;
+      in pkgs.mkShell {
+        packages = with pkgs; [
+          acpica-tools
+          apitrace
+          drm_info
+          gdb
+          git
+          intel-gpu-tools
+          jq
+          libdrm
+          mesa-demos
+          pciutils
+          strace
+        ];
+        shellHook = ''
+          echo "vlenovo graphics shell: i915/DRM/Mesa diagnostic tools available"
+        '';
+      };
+
     # Formatter for your nix files, available through 'nix fmt'
     # Other options beside 'alejandra' include 'nixpkgs-fmt'
     formatter = forAllSystems (system: nixpkgs.legacyPackages.${system}.alejandra);

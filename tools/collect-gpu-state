@@ -1,0 +1,163 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="${1:-gpu-captures}"
+STAMP="$(date +%Y%m%d-%H%M%S)"
+OUT="$ROOT/$STAMP"
+mkdir -p "$OUT"
+
+log() { printf '%s\n' "$*" >&2; }
+have() { command -v "$1" >/dev/null 2>&1; }
+
+run_capture() {
+  local name="$1"; shift
+  {
+    printf '$'
+    printf ' %q' "$@"
+    printf '\n\n'
+    timeout 30 "$@"
+  } >"$OUT/$name.txt" 2>&1 || true
+}
+
+log "Collecting GPU state into $OUT"
+
+{
+  date -Is
+  uname -a
+  command -v nixos-version >/dev/null && nixos-version || true
+  printf 'current='; readlink -f /run/current-system || true
+  printf 'profile='; readlink -f /nix/var/nix/profiles/system || true
+  printf 'booted='; readlink -f /run/booted-system || true
+} >"$OUT/system.txt"
+
+{
+  for f in sys_vendor product_name product_version product_family \
+           board_vendor board_name bios_vendor bios_version bios_date; do
+    p="/sys/class/dmi/id/$f"
+    [ -r "$p" ] && printf '%s=%s\n' "$f" "$(cat "$p")"
+  done
+} >"$OUT/dmi.txt"
+
+cat /proc/cmdline >"$OUT/cmdline.txt"
+cp /proc/cpuinfo "$OUT/cpuinfo.txt"
+
+if have lspci; then
+  run_capture lspci lspci -nnk
+else
+  echo "lspci not installed" >"$OUT/lspci.txt"
+fi
+
+{
+  for card in /sys/class/drm/card[0-9]*; do
+    [ -f "$card/device/vendor" ] || continue
+    echo "card=$card"
+    for f in vendor device subsystem_vendor subsystem_device; do
+      [ -r "$card/device/$f" ] && printf '%s=%s\n' "$f" "$(cat "$card/device/$f")"
+    done
+    printf 'driver='; basename "$(readlink -f "$card/device/driver")" 2>/dev/null || true
+  done
+} >"$OUT/drm-device.txt"
+
+{
+  for conn in /sys/class/drm/card*-*/status; do
+    [ -r "$conn" ] || continue
+    dir="$(dirname "$conn")"
+    echo "=== $(basename "$dir") ==="
+    printf 'status='; cat "$conn"
+    [ -r "$dir/modes" ] && { echo "modes:"; cat "$dir/modes"; }
+  done
+} >"$OUT/connectors.txt"
+
+if have drm_info; then run_capture drm-info drm_info; fi
+if have modetest; then run_capture modetest modetest -M i915 -c -p; fi
+
+if have glxinfo; then
+  (
+    export DISPLAY="${DISPLAY:-:0}"
+    glxinfo -B
+  ) >"$OUT/glxinfo.txt" 2>&1 || true
+fi
+
+if have eglinfo; then run_capture eglinfo eglinfo -B; fi
+if have intel_gpu_top; then run_capture intel-gpu-top-list intel_gpu_top -L; fi
+
+journalctl -b -k --no-pager |
+  grep -Ei 'i915|drm|gpu|dsi|mipi|vbt|underrun|hang|reset'   >"$OUT/kernel-gpu-journal.txt" || true
+
+DBG=""
+for candidate in /sys/kernel/debug/dri/0000:00:02.0 /sys/kernel/debug/dri/[0-9]*; do
+  if sudo -n test -e "$candidate/i915_gpu_info" 2>/dev/null; then
+    DBG="$candidate"
+    break
+  fi
+done
+
+if [ -n "$DBG" ]; then
+  echo "$DBG" >"$OUT/debugfs-path.txt"
+  for f in i915_display_info i915_gpu_info i915_error_state \
+           i915_frequency_info i915_runtime_pm_status i915_engine_info \
+           i915_power_domain_info i915_wa_registers i915_capabilities; do
+    if sudo -n test -e "$DBG/$f" 2>/dev/null; then
+      sudo -n cat "$DBG/$f" >"$OUT/$f.txt" 2>&1 || true
+    fi
+  done
+
+  if sudo -n test -e "$DBG/i915_vbt" 2>/dev/null; then
+    sudo -n cat "$DBG/i915_vbt" >"$OUT/i915_vbt.bin"
+    sha256sum "$OUT/i915_vbt.bin" >"$OUT/i915_vbt.sha256"
+    if have intel_vbt_decode; then
+      intel_vbt_decode "$OUT/i915_vbt.bin" >"$OUT/i915_vbt.txt" 2>&1 || true
+    fi
+  fi
+fi
+
+if have acpidump; then
+  ACPIDUMP="$(command -v acpidump)"
+  (
+    cd "$OUT"
+    sudo -n "$ACPIDUMP" -b -z >acpidump.log 2>&1 || true
+
+    # MSDM contains the OEM Windows product key. SLIC/MSDM are unrelated to
+    # Linux graphics debugging, so never retain them in research captures.
+    sudo -n rm -f msdm.dat slic.dat
+  )
+  if have iasl && [ -f "$OUT/dsdt.dat" ]; then
+    (
+      cd "$OUT"
+      iasl -d dsdt.dat ssdt*.dat >iasl.log 2>&1 || true
+    )
+  fi
+fi
+
+{
+  echo "modules:"
+  lsmod | grep -E '^(i915|drm|video)' || true
+  echo
+  echo "i915 parameters:"
+  for p in /sys/module/i915/parameters/*; do
+    [ -r "$p" ] || continue
+    printf '%s=' "$(basename "$p")"
+    cat "$p" 2>/dev/null || true
+  done
+} >"$OUT/i915-module.txt"
+
+if have swaymsg && [ -r /run/user/"$(id -u)"/sxmo.swaysock ]; then
+  SWAYSOCK="$(cat /run/user/"$(id -u)"/sxmo.swaysock)"
+  SWAYSOCK="$SWAYSOCK" swaymsg -t get_outputs -r >"$OUT/sway-outputs.json" 2>&1 || true
+fi
+
+{
+  echo "meminfo:"
+  free -h
+  echo
+  echo "pressure:"
+  cat /proc/pressure/cpu
+  cat /proc/pressure/io
+  cat /proc/pressure/memory
+} >"$OUT/performance.txt"
+
+find "$OUT" -maxdepth 1 -type f -print0 |
+  sort -z | xargs -0 sha256sum >"$OUT/SHA256SUMS"
+
+log "GPU capture complete: $OUT"
+printf '%s\n' "$OUT"

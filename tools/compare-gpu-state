@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [ "$#" -ne 2 ]; then
+  echo "usage: $0 BEFORE_CAPTURE AFTER_CAPTURE" >&2
+  exit 2
+fi
+
+BEFORE="$1"
+AFTER="$2"
+
+for d in "$BEFORE" "$AFTER"; do
+  [ -d "$d" ] || { echo "not a directory: $d" >&2; exit 2; }
+done
+
+echo "before: $BEFORE"
+echo "after:  $AFTER"
+echo
+
+FILES=(
+  drm-device.txt
+  connectors.txt
+  glxinfo.txt
+  i915_gpu_info.txt
+  i915_display_info.txt
+  i915_frequency_info.txt
+  i915_runtime_pm_status.txt
+  i915_capabilities.txt
+  i915-module.txt
+  kernel-gpu-journal.txt
+)
+
+for f in "${FILES[@]}"; do
+  a="$BEFORE/$f"
+  b="$AFTER/$f"
+  [ -e "$a" ] || [ -e "$b" ] || continue
+  echo "===== $f ====="
+  diff -u "$a" "$b" || true
+  echo
+done
+
+echo "===== VBT ====="
+if [ -f "$BEFORE/i915_vbt.bin" ] && [ -f "$AFTER/i915_vbt.bin" ]; then
+  a="$(sha256sum "$BEFORE/i915_vbt.bin" | awk '{print $1}')"
+  b="$(sha256sum "$AFTER/i915_vbt.bin" | awk '{print $1}')"
+  echo "before sha256: $a"
+  echo "after  sha256: $b"
+  if [ "$a" = "$b" ]; then
+    echo "VBT unchanged"
+  else
+    echo "VBT changed"
+  fi
+else
+  echo "VBT missing from one or both captures"
+fi
+
+echo
+echo "===== errors/resets quick check ====="
+for d in "$BEFORE" "$AFTER"; do
+  echo "-- $d"
+  grep -Ei 'reset count|ERROR:|underrun|hang|wedged|GPU reset'     "$d"/i915_gpu_info.txt "$d"/kernel-gpu-journal.txt 2>/dev/null || true
+done

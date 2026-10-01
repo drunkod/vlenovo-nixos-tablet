@@ -18,7 +18,7 @@ sync_repo() {
   echo "==> Syncing $ROOT -> $TARGET:$REMOTE_DIR"
   ssh_tablet "mkdir -p '$REMOTE_DIR'"
   rsync -az --delete \
-    --exclude '.git' --exclude 'result' \
+    --exclude '.git' --exclude 'result' --exclude 'debug' --exclude 'gpu-captures' \
     -e "ssh -i '$IDENTITY' -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new" \
     "$ROOT/" "$TARGET:$REMOTE_DIR/"
 }

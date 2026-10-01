@@ -4,3 +4,4 @@ result-*
 .env
 .DS_Store
 debug/
+gpu-captures/
