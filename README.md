@@ -52,6 +52,7 @@ On the tablet, enter the diagnostic environment with:
 ```bash
 nix develop .#graphics
 ./tools/collect-gpu-state
+./tools/benchmark-vaapi INPUT.mp4
 ```
 
 GPU captures are intentionally ignored by Git because ACPI/firmware dumps may contain machine-specific data.

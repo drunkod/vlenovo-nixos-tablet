@@ -36,6 +36,36 @@ VP8, VP9, and HEVC were not exposed by this modern i965 test.
 For normal H.264/MPEG-2/VC-1/JPEG playback, the missing NixOS package is
 therefore a more immediate performance issue than the kernel graphics driver.
 
+## H.264 decode benchmark
+
+A reproducible 12-second 1920x1080@30 H.264 test clip was decoded three times
+with FFmpeg 7.1.1. Software decoding used four CPU threads. The VA-API test
+used `/dev/dri/renderD128`, the i965 Bay Trail driver, and
+`-hwaccel_output_format vaapi` so decoded frames stayed on the GPU.
+
+Software decode averaged about 5.5x realtime with about 7.44 CPU-seconds per
+run. Direct VA-API decode averaged about 16.0x realtime with about 1.03
+CPU-seconds per run. In other words, the fixed-function path was roughly 2.9x
+faster in this synthetic decode-only test while consuming about 86% fewer CPU
+seconds.
+
+`intel_gpu_top` independently observed the `Video` engine active during the
+VA-API run (four sampled active intervals, peak 100%, mean active sample about
+62.9%). Render/3D and Blitter stayed idle in that capture, which is consistent
+with fixed-function video decode rather than a Crocus 3D workload.
+
+A VA-API run which allowed FFmpeg to download every decoded frame back to CPU
+memory was much slower (roughly 1.6-1.9x realtime). That is not evidence that
+hardware decode is slow; it demonstrates the cost of a forced GPU-to-CPU frame
+transfer. Real players should keep frames in hardware/DMABUF paths where
+possible.
+
+After the tests i915 still reported reset count 0, `ERROR=0x00000000`, no new
+kernel GPU warnings, and zero failed systemd units.
+
+Use `tools/benchmark-vaapi INPUT.mp4` from `nix develop .#graphics` to repeat
+the software/direct-VA-API comparison.
+
 ## Historical Intel Bay Trail stack
 
 A 2015 Intel EMGD/Valleyview source drop preserved on GitHub contains a

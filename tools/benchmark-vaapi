@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+INPUT="${1:-}"
+RUNS="${RUNS:-3}"
+if [ -z "$INPUT" ] || [ ! -f "$INPUT" ]; then
+  echo "usage: $0 INPUT.mp4" >&2
+  exit 2
+fi
+
+export LIBVA_DRIVER_NAME="${LIBVA_DRIVER_NAME:-i965}"
+export LIBVA_DRIVERS_PATH="${LIBVA_DRIVERS_PATH:-/run/opengl-driver/lib/dri}"
+
+echo "input=$INPUT"
+echo "runs=$RUNS"
+vainfo --display drm --device /dev/dri/renderD128 2>&1 | sed -n '1,18p'
+
+for mode in software vaapi-direct; do
+  echo "=== $mode ==="
+  for i in $(seq 1 "$RUNS"); do
+    echo "run=$i"
+    if [ "$mode" = software ]; then
+      ffmpeg -hide_banner -loglevel info -benchmark -threads 4 -i "$INPUT" \
+        -map 0:v:0 -an -sn -f null - 2>&1 | grep -E 'frame=|bench:' | tail -4
+    else
+      ffmpeg -hide_banner -loglevel info -benchmark -hwaccel vaapi \
+        -hwaccel_device /dev/dri/renderD128 -hwaccel_output_format vaapi \
+        -i "$INPUT" -map 0:v:0 -an -sn -f null - 2>&1 |
+        grep -E 'frame=|bench:' | tail -4
+    fi
+  done
+done

@@ -58,6 +58,7 @@
           acpica-tools
           apitrace
           drm_info
+          ffmpeg
           gdb
           git
           intel-gpu-tools

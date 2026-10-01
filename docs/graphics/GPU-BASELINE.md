@@ -103,7 +103,7 @@ Useful files include:
 
 The flake's `graphics` dev shell has been validated on the tablet. It provides
 `drm_info`, `modetest`, `intel_gpu_top`, `intel_vbt_decode`, `glxinfo`,
-`vainfo`, `acpidump`, `iasl`, and `apitrace` without making those tools part
+`vainfo`, `ffmpeg`, `acpidump`, `iasl`, and `apitrace` without making those tools part
 of the permanent system profile.
 
 A full capture produced by `tools/collect-gpu-state` includes DRM/KMS state,
