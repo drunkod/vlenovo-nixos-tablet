@@ -99,6 +99,19 @@ Useful files include:
 - `i915_wa_registers` — programmed workarounds.
 - `i915_capabilities` — driver/platform capabilities.
 
+## Reproducible research environment
+
+The flake's `graphics` dev shell has been validated on the tablet. It provides
+`drm_info`, `modetest`, `intel_gpu_top`, `intel_vbt_decode`, `glxinfo`,
+`vainfo`, `acpidump`, `iasl`, and `apitrace` without making those tools part
+of the permanent system profile.
+
+A full capture produced by `tools/collect-gpu-state` includes DRM/KMS state,
+i915 debugfs data, the raw and decoded VBT, ACPI tables with MSDM/SLIC removed,
+Mesa/VA-API information, and checksums. The VBT hash remains
+`ac43644603f1e519ce83c594e1ef75f8c779533fdd51864d293876893c519312`
+across the before/after VA-API captures.
+
 ## Safety rule
 
 Never start by replacing i915. First capture a reproducible symptom, determine

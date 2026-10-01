@@ -44,7 +44,27 @@ model-named i915 graphics quirk. This does not prove that no generic
 Valleyview graphics fix ever affected the device, but it is further evidence
 against starting with a Miix-specific graphics patch without a reproduced bug.
 
+There is useful historical evidence from the closely related Lenovo Miix 2 8.
+In 2017 a tester reported that the upstream Valleyview DSI clock-gating fix
+`bb98e72adaf9`/`721d484563e1` fixed intermittent i915 panel initialization on
+that Bay Trail tablet. The fix preserves `DPOUNIT_CLOCK_GATE_DISABLE` while a
+DSI pipe is active. It has been upstream for many years and is already part of
+modern kernels, so it is evidence that i915 is the right driver family, not a
+patch we need to port to Linux 6.12.
+
 ## Post-6.12 Valleyview/DSI fixes screened
+
+### Late-2024 DSI/VBT cleanups
+
+Commits `95601c60b1be` and `252cea7f0fb4` move the existing Valleyview DSI
+minimum-CDCLK rule into `vlv_dsi.c` and simplify it. They preserve the same
+320 MHz minimum already present in the older code for Valleyview DSI panels,
+so they are structural cleanups rather than a performance fix for this tablet.
+
+Commit `ef0430f5d3ab` replaces an accidental register-format/VBT-format
+coupling with an explicit VBT-to-MIPI pixel-format conversion. The Miix VBT
+reports RGB888, which maps to RGB888 in both the old and new code, so there is
+no evidence this changes behaviour on this machine.
 
 ### 2025 MIPI v1/v2 sequence fixup
 

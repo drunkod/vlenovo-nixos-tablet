@@ -77,8 +77,21 @@ Existing Lenovo Valleyview DSI quirk examples:
 - Follow-up DMI-match relaxation:
   https://github.com/torvalds/linux/commit/7d058e6bac9afab6a406e34344ebbfd3068bb2d5
 
+Historical same-family evidence:
+
+- Old Valleyview DSI clock-gating fix later reported to fix panel init on a
+  Lenovo Miix 2 8:
+  https://github.com/torvalds/linux/commit/721d484563e1a51ada760089c490cbc47e909756
+- 2017 report/backport test on the Miix 2 8:
+  https://lists.openwall.net/linux-kernel/2017/02/17/102
+
 Post-6.12 changes screened during this research:
 
+- Valleyview DSI min-CDCLK extraction/refactor:
+  https://github.com/torvalds/linux/commit/95601c60b1bef0cae3567b6a8816aacdd72bc340
+  https://github.com/torvalds/linux/commit/252cea7f0fb41057c899bdfdd78f1b04a1ffe75d
+- Explicit VBT-to-MIPI pixel-format conversion:
+  https://github.com/torvalds/linux/commit/ef0430f5d3ab5b9e9e31e7534e1ebbd01ea587dc
 - VLV v1/v2 MIPI sequence fixup:
   https://github.com/torvalds/linux/commit/e778689390c71462a099b5d6e56d71c316486184
 - Later VLV DPHY NULL-deref fix:
