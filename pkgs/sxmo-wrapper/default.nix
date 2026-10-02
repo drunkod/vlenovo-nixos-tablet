@@ -63,7 +63,12 @@ fi'
     # For profiles that opt in, keep this hook alive until udev classifies a
     # touchscreen instead of letting superd exhaust its short restart window.
     substituteInPlace configs/default_hooks/sxmo_hook_lisgdstart.sh \
-      --replace 'LISGD_INPUT_DEVICE="''${SXMO_LISGD_INPUT_DEVICE:-"/dev/input/by-path/first-touchscreen"}"' 'if [ -n "$SXMO_LISGD_WAIT_FOR_TOUCHSCREEN" ] && [ -z "$SXMO_LISGD_INPUT_DEVICE" ]; then
+      --replace 'LISGD_INPUT_DEVICE="''${SXMO_LISGD_INPUT_DEVICE:-"/dev/input/by-path/first-touchscreen"}"' 'if [ -n "$SXMO_LISGD_WAIT_FOR_TOUCHSCREEN" ]; then
+  if [ -n "$SXMO_LISGD_INPUT_DEVICE" ]; then
+    if [ ! -e "$SXMO_LISGD_INPUT_DEVICE" ] || ! udevadm info -q property -n "$SXMO_LISGD_INPUT_DEVICE" 2>/dev/null | grep -qx "ID_INPUT_TOUCHSCREEN=1"; then
+      unset SXMO_LISGD_INPUT_DEVICE
+    fi
+  fi
   while [ -z "$SXMO_LISGD_INPUT_DEVICE" ]; do
     for dev in /dev/input/event*; do
       if udevadm info -q property -n "$dev" 2>/dev/null | grep -qx "ID_INPUT_TOUCHSCREEN=1"; then
