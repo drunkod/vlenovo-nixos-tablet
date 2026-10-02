@@ -51,8 +51,13 @@ in
     # Set the default boot target to graphical.
     systemd.defaultUnit = "graphical.target";
 
-    # Install Sxmo's udev rules for hardware like LEDs and sensors.
+    # Keep Sxmo available to udev, and mirror the touchscreen rule explicitly.
+    # Upstream stores it under share/sxmo/udev, which NixOS does not scan as a
+    # package udev-rules directory.
     services.udev.packages = [ pkgs.sxmo-utils ];
+    services.udev.extraRules = ''
+      ACTION=="add|change", SUBSYSTEM=="input", KERNEL=="event[0-9]*", ENV{ID_INPUT_TOUCHSCREEN}=="1", SYMLINK+="input/by-path/first-touchscreen"
+    '';
 
     # Ensure the user is in the correct groups to access hardware.
     users.users.${cfg.user}.extraGroups = [ "input" "video" ];

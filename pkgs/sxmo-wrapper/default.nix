@@ -59,6 +59,23 @@ fi'
     substituteInPlace configs/default_hooks/sxmo_hook_lisgdstart.sh \
       --replace 'lisgd "$@" -d "$LISGD_INPUT_DEVICE"' 'lisgd "$@" ''${SXMO_LISGD_EXTRA_ARGS:-} -d "$LISGD_INPUT_DEVICE"'
 
+    # Some tablets expose their touchscreen after the graphical session starts.
+    # For profiles that opt in, keep this hook alive until udev classifies a
+    # touchscreen instead of letting superd exhaust its short restart window.
+    substituteInPlace configs/default_hooks/sxmo_hook_lisgdstart.sh \
+      --replace 'LISGD_INPUT_DEVICE="''${SXMO_LISGD_INPUT_DEVICE:-"/dev/input/by-path/first-touchscreen"}"' 'if [ -n "$SXMO_LISGD_WAIT_FOR_TOUCHSCREEN" ] && [ -z "$SXMO_LISGD_INPUT_DEVICE" ]; then
+  while [ -z "$SXMO_LISGD_INPUT_DEVICE" ]; do
+    for dev in /dev/input/event*; do
+      if udevadm info -q property -n "$dev" 2>/dev/null | grep -qx "ID_INPUT_TOUCHSCREEN=1"; then
+        SXMO_LISGD_INPUT_DEVICE="$dev"
+        break
+      fi
+    done
+    [ -n "$SXMO_LISGD_INPUT_DEVICE" ] || sleep 1
+  done
+fi
+LISGD_INPUT_DEVICE="''${SXMO_LISGD_INPUT_DEVICE:-"/dev/input/by-path/first-touchscreen"}"'
+
     # The migration script needs to find all default config files. The original
     # script relies on XDG_DATA_DIRS to find them. We inject the correct path
     # at the top of the script so all subsequent calls to `xdg_data_path` work.
