@@ -1,0 +1,43 @@
+From 5dd41e92cc069dc31a724f0f169500d489d6ce92 Mon Sep 17 00:00:00 2001
+From: drunkod <drunkod@gmail.com>
+Date: Sun, 4 Oct 2026 19:04:56 +0500
+Subject: [PATCH] Enable native DRM backend for NixOS Lenovo tablet
+
+---
+ shell/src/backend/mod.rs | 3 +++
+ shell/src/main.rs        | 6 +++---
+ 2 files changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/shell/src/backend/mod.rs b/shell/src/backend/mod.rs
+index 08e2639..91b4f4c 100644
+--- a/shell/src/backend/mod.rs
++++ b/shell/src/backend/mod.rs
+@@ -9,6 +9,9 @@
+ 
+ pub mod winit;
+ 
++// Generic Linux DRM/KMS + libinput backend.
++pub mod udev;
++
+ // FFI bindings to our C shim (libflick_hwc)
+ pub mod hwc_shim_ffi;
+ 
+diff --git a/shell/src/main.rs b/shell/src/main.rs
+index 2ef1e9f..5d11e4e 100644
+--- a/shell/src/main.rs
++++ b/shell/src/main.rs
+@@ -95,8 +95,8 @@ fn main() -> Result<()> {
+         info!("Running in windowed mode (winit backend)");
+         backend::winit::run()
+     } else {
+-        // On this branch (hwcomposer-backend), hwcomposer is the default
+-        info!("Running on hardware (hwcomposer backend for Droidian)");
+-        backend::hwcomposer::run()
++        // Native Linux target: use DRM/KMS + udev/libinput.
++        info!("Running on hardware (native DRM/KMS udev backend)");
++        backend::udev::run()
+     }
+ }
+-- 
+2.55.0
+

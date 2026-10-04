@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+: "${VLENOVO_HOST:=10.230.221.139}"
+TABLET_USER="${VLENOVO_USER:-alex}"
+
+NIX_LOCAL="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+FLICK_LOCAL="${FLICK_LOCAL:-$HOME/src/Flick}"
+
+NIX_REMOTE="/home/${TABLET_USER}/vlenovo-dev"
+FLICK_REMOTE="/home/${TABLET_USER}/Flick-dev"
+IDENTITY="${VLENOVO_IDENTITY:-$HOME/.ssh/id_ed25519}"
+
+SSH=(ssh -i "$IDENTITY" -o IdentitiesOnly=yes -o BatchMode=yes -o ConnectTimeout=8 -o StrictHostKeyChecking=accept-new "${TABLET_USER}@${VLENOVO_HOST}")
+
+sync_tree() {
+  echo "==> Syncing NixOS repository"
+  rsync -az --delete     --exclude '.git/'     --exclude '.codegraph/'     --exclude 'result'     --exclude 'debug/'     --exclude 'gpu-captures/'     -e "ssh -i '$IDENTITY' -o IdentitiesOnly=yes -o BatchMode=yes -o ConnectTimeout=8 -o StrictHostKeyChecking=accept-new"     "${NIX_LOCAL}/" "${TABLET_USER}@${VLENOVO_HOST}:${NIX_REMOTE}/"
+
+  echo "==> Syncing Flick repository"
+  rsync -az --delete     --exclude '.git/'     --exclude 'shell/target/'     -e "ssh -i '$IDENTITY' -o IdentitiesOnly=yes -o BatchMode=yes -o ConnectTimeout=8 -o StrictHostKeyChecking=accept-new"     "${FLICK_LOCAL}/" "${TABLET_USER}@${VLENOVO_HOST}:${FLICK_REMOTE}/"
+}
+
+case "${1:-}" in
+  sync)
+    "${SSH[@]}" "mkdir -p '$NIX_REMOTE' '$FLICK_REMOTE'"
+    sync_tree
+    ;;
+  shell)
+    "${SSH[@]}" "mkdir -p '$NIX_REMOTE' '$FLICK_REMOTE'"
+    sync_tree
+    exec "${SSH[@]}" -t "cd '$NIX_REMOTE' && nix develop .#flick"
+    ;;
+  cargo)
+    "${SSH[@]}" "mkdir -p '$NIX_REMOTE' '$FLICK_REMOTE'"
+    sync_tree
+    "${SSH[@]}" "cd '$NIX_REMOTE' && nix develop .#flick --command bash -lc 'cd $FLICK_REMOTE/shell && cargo build --release -j1'"
+    ;;
+  build|test|switch|boot)
+    "${SSH[@]}" "mkdir -p '$NIX_REMOTE' '$FLICK_REMOTE'"
+    sync_tree
+    "${SSH[@]}" "cd '$NIX_REMOTE' && sudo nixos-rebuild '${1}' --flake .#vlenovo --show-trace"
+    ;;
+  rollback)
+    "${SSH[@]}" "sudo /run/booted-system/bin/switch-to-configuration test"
+    ;;
+  status)
+    exec "${SSH[@]}" 'echo "CURRENT=$(readlink -f /run/current-system)"; echo "BOOTED=$(readlink -f /run/booted-system)"; echo; systemctl --failed --no-pager; echo; nmcli -t -f DEVICE,TYPE,STATE,CONNECTION device status; echo; systemctl is-active sshd NetworkManager sxmo bluetooth'
+    ;;
+  logs)
+    service="${2:-flick}"
+    exec "${SSH[@]}" "journalctl -b -u '$service' --no-pager -n 250"
+    ;;
+  ssh)
+    exec "${SSH[@]}"
+    ;;
+  *)
+    cat <<EOF
+Usage:
+  $0 sync
+  $0 shell
+  $0 cargo
+  $0 build
+  $0 test
+  $0 switch
+  $0 boot
+  $0 rollback
+  $0 status
+  $0 logs [service]
+  $0 ssh
+EOF
+    exit 1
+    ;;
+esac

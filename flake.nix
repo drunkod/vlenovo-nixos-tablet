@@ -77,6 +77,11 @@
         '';
       };
 
+    # Native Flick/Smithay development shell for the x86_64 tablet.
+    devShells.x86_64-linux.flick =
+      let pkgs = nixpkgs.legacyPackages.x86_64-linux;
+      in import ./dev/flick-shell.nix { inherit pkgs; };
+
     # Formatter for your nix files, available through 'nix fmt'
     # Other options beside 'alejandra' include 'nixpkgs-fmt'
     formatter = forAllSystems (system: nixpkgs.legacyPackages.${system}.alejandra);
