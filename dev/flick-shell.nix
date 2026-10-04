@@ -6,12 +6,11 @@ pkgs.mkShell {
     rustc
     rustfmt
     clippy
-
     pkg-config
     clang
     llvmPackages.libclang
 
-    libseat
+    seatd
     libinput
     libdrm
     libgbm
@@ -22,17 +21,6 @@ pkgs.mkShell {
     wayland-protocols
     systemd
     pam
-
-    mesa-demos
-    brightnessctl
-    networkmanager
-    bluez
-    util-linux
-    alsa-utils
-    pulseaudio
-    pciutils
-    usbutils
-    evtest
   ];
 
   LIBCLANG_PATH = "${pkgs.llvmPackages.libclang.lib}/lib";
@@ -42,7 +30,7 @@ pkgs.mkShell {
     pkgs.libgbm
     pkgs.libglvnd
     pkgs.libinput
-    pkgs.libseat
+    pkgs.seatd
     pkgs.libxkbcommon
     pkgs.systemd
   ] + ":/run/opengl-driver/lib";
