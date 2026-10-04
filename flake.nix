@@ -7,6 +7,10 @@
     # You can access packages and modules from different nixpkgs revs
     # at the same time. Here's an working example:
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable"; # Changed to actual unstable
+
+    # Keep the tablet on NixOS 25.05, but use a current Rust toolchain for Flick.
+    # Flick's current dependency graph requires a newer compiler than 25.05 ships.
+    nixpkgs-rust.url = "github:nixos/nixpkgs/nixos-unstable";
     # Also see the 'unstable-packages' overlay at 'overlays/default.nix'.
 
     # Home manager
@@ -79,8 +83,10 @@
 
     # Native Flick/Smithay development shell for the x86_64 tablet.
     devShells.x86_64-linux.flick =
-      let pkgs = nixpkgs.legacyPackages.x86_64-linux;
-      in import ./dev/flick-shell.nix { inherit pkgs; };
+      let
+        pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        rustPkgs = inputs.nixpkgs-rust.legacyPackages.x86_64-linux;
+      in import ./dev/flick-shell.nix { inherit pkgs rustPkgs; };
 
     # Formatter for your nix files, available through 'nix fmt'
     # Other options beside 'alejandra' include 'nixpkgs-fmt'

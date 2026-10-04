@@ -1,11 +1,11 @@
-{ pkgs }:
+{ pkgs, rustPkgs }:
 
 pkgs.mkShell {
   packages = with pkgs; [
-    cargo
-    rustc
-    rustfmt
-    clippy
+    rustPkgs.cargo
+    rustPkgs.rustc
+    rustPkgs.rustfmt
+    rustPkgs.clippy
     pkg-config
     clang
     llvmPackages.libclang
