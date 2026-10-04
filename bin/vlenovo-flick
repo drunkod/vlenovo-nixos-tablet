@@ -15,10 +15,11 @@ SSH=(ssh -i "$IDENTITY" -o IdentitiesOnly=yes -o BatchMode=yes -o ConnectTimeout
 
 sync_tree() {
   echo "==> Syncing NixOS repository"
-  rsync -az --delete     --exclude '.git/'     --exclude '.codegraph/'     --exclude 'result'     --exclude 'debug/'     --exclude 'gpu-captures/'     -e "ssh -i '$IDENTITY' -o IdentitiesOnly=yes -o BatchMode=yes -o ConnectTimeout=8 -o StrictHostKeyChecking=accept-new"     "${NIX_LOCAL}/" "${TABLET_USER}@${VLENOVO_HOST}:${NIX_REMOTE}/"
+  "${SSH[@]}" "rm -rf '$NIX_REMOTE/.git' '$FLICK_REMOTE/.git'"
+  rsync -az --delete     --exclude '.git'     --exclude '.git/'     --exclude '.codegraph/'     --exclude 'result'     --exclude 'debug/'     --exclude 'gpu-captures/'     -e "ssh -i '$IDENTITY' -o IdentitiesOnly=yes -o BatchMode=yes -o ConnectTimeout=8 -o StrictHostKeyChecking=accept-new"     "${NIX_LOCAL}/" "${TABLET_USER}@${VLENOVO_HOST}:${NIX_REMOTE}/"
 
   echo "==> Syncing Flick repository"
-  rsync -az --delete     --exclude '.git/'     --exclude 'shell/target/'     -e "ssh -i '$IDENTITY' -o IdentitiesOnly=yes -o BatchMode=yes -o ConnectTimeout=8 -o StrictHostKeyChecking=accept-new"     "${FLICK_LOCAL}/" "${TABLET_USER}@${VLENOVO_HOST}:${FLICK_REMOTE}/"
+  rsync -az --delete     --exclude '.git'     --exclude '.git/'     --exclude 'shell/target/'     -e "ssh -i '$IDENTITY' -o IdentitiesOnly=yes -o BatchMode=yes -o ConnectTimeout=8 -o StrictHostKeyChecking=accept-new"     "${FLICK_LOCAL}/" "${TABLET_USER}@${VLENOVO_HOST}:${FLICK_REMOTE}/"
 }
 
 case "${1:-}" in
