@@ -25,13 +25,13 @@
 
 rustPlatform.buildRustPackage rec {
   pname = "flick";
-  version = "unstable-2026-10-04";
+  version = "unstable-2026-01-04";
 
   src = fetchFromGitHub {
     owner = "ruapotato";
     repo = "Flick";
-    rev = "3e9875f5e2b9bef511cf144d3a0a37afb037409e";
-    hash = "sha256-+jI/MgP3m0p8lcrUfzaf/k7x1jr1stOJq4iPIqU2RTg=";
+    rev = "729cdecedad05be3192b21f7d4310eb0ff7ae563";
+    hash = "sha256-1PCrxojPfZd99vf3UMcIrmIlM0dtdK2ubo6o9rOUdIY=";
   };
 
   patches = [
