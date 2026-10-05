@@ -1,0 +1,155 @@
+=== system ===
+Linux vlenovo 6.12.36 #1-NixOS SMP PREEMPT_DYNAMIC Sun Jul  6 09:01:50 UTC 2025 x86_64 GNU/Linux
+
+=== failed units ===
+  UNIT LOAD ACTIVE SUB DESCRIPTION
+
+0 loaded units listed.
+
+=== Flick ===
+● flick.service - Flick mobile Wayland compositor
+     Loaded: loaded (/etc/systemd/system/flick.service; enabled; preset: ignored)
+     Active: active (running) since Mon 2026-10-05 18:00:49 UTC; 15min ago
+ Invocation: ed3076be9c9245219c8908f2e453f230
+    Process: 873 ExecStartPre=/nix/store/mp7ba85zcqdj2sqwa29pql02s6nqpcxy-coreutils-9.7/bin/sleep 2 (code=exited, status=0/SUCCESS)
+   Main PID: 878 (.flick-wrapped)
+         IP: 0B in, 0B out
+         IO: 36K read, 4K written
+      Tasks: 0 (limit: 2132)
+     Memory: 1.5M (peak: 2.1M)
+        CPU: 106ms
+     CGroup: /system.slice/flick.service
+             ‣ 878 /nix/store/m172d1ag4vy4r7qpm6b1j05c1b2r35av-flick-unstable-2026-01-04/bin/flick
+
+Oct 05 18:00:47 vlenovo systemd[1]: Starting Flick mobile Wayland compositor...
+Oct 05 18:00:47 vlenovo (sleep)[873]: pam_unix(login:session): session opened for user alex(uid=1001) by (uid=0)
+Oct 05 18:00:49 vlenovo systemd[1]: Started Flick mobile Wayland compositor.
+Oct 05 18:00:50 vlenovo (flick)[878]: pam_unix(login:session): session opened for user alex(uid=1001) by (uid=0)
+
+=== DRM ===
+total 0
+drwxr-xr-x  2 root root         80 Oct  5 18:00 by-path
+crw-rw----+ 1 root video  226,   1 Oct  5 18:00 card1
+crw-rw-rw-  1 root render 226, 128 Oct  5 18:00 renderD128
+--- /sys/class/drm/card1-DSI-1
+connected
+1920x1200
+
+=== input ===
+N: Name="Lid Switch"
+H: Handlers=event0
+N: Name="ITE8568:00 103C:184F Keyboard"
+H: Handlers=sysrq kbd event1 leds
+N: Name="gpio-keys"
+H: Handlers=kbd event5
+N: Name="gpio-keys"
+H: Handlers=kbd event6
+N: Name="ELAN1001:00 04F3:032F"
+H: Handlers=event2 mouse0
+N: Name="ELAN1001:00 04F3:032F UNKNOWN"
+H: Handlers=event3
+N: Name="ELAN1001:00 04F3:032F UNKNOWN"
+H: Handlers=event4
+N: Name="cht-bsw-rt5672 Headset"
+H: Handlers=kbd event7
+N: Name="Video Bus"
+H: Handlers=kbd event8
+N: Name="Intel HDMI/DP LPE Audio HDMI/DP,pcm=0"
+H: Handlers=event9
+N: Name="Intel HDMI/DP LPE Audio HDMI/DP,pcm=1"
+H: Handlers=event10
+
+=== network ===
+DEVICE         TYPE      STATE                   CONNECTION
+wlan0          wifi      connected               Pixel_7206
+lo             loopback  connected (externally)  lo
+p2p-dev-wlan0  wifi-p2p  disconnected            --
+lo               UNKNOWN        127.0.0.1/8 ::1/128
+wlan0            UP             10.230.221.139/24 fe80::84d1:1d0c:9914:d34d/64
+
+=== Bluetooth ===
+0: hci0: Bluetooth
+	Soft blocked: no
+	Hard blocked: no
+1: phy0: Wireless LAN
+	Soft blocked: no
+	Hard blocked: no
+Controller 76:CA:2F:73:6A:8C (public)
+	Manufacturer: 0x000f (15)
+	Version: 0x06 (6)
+	Name: vlenovo
+	Alias: vlenovo
+	Class: 0x006c0110 (7078160)
+	Powered: yes
+	PowerState: on
+	Discoverable: no
+	DiscoverableTimeout: 0x000000b4 (180)
+	Pairable: no
+	UUID: A/V Remote Control        (0000110e-0000-1000-8000-00805f9b34fb)
+	UUID: Handsfree Audio Gateway   (0000111f-0000-1000-8000-00805f9b34fb)
+	UUID: PnP Information           (00001200-0000-1000-8000-00805f9b34fb)
+	UUID: Audio Sink                (0000110b-0000-1000-8000-00805f9b34fb)
+	UUID: Headset                   (00001108-0000-1000-8000-00805f9b34fb)
+	UUID: A/V Remote Control Target (0000110c-0000-1000-8000-00805f9b34fb)
+	UUID: Generic Access Profile    (00001800-0000-1000-8000-00805f9b34fb)
+	UUID: Audio Source              (0000110a-0000-1000-8000-00805f9b34fb)
+	UUID: Generic Attribute Profile (00001801-0000-1000-8000-00805f9b34fb)
+	UUID: Device Information        (0000180a-0000-1000-8000-00805f9b34fb)
+	Modalias: usb:v1D6Bp0246d0550
+	Discovering: no
+	Roles: central
+	Roles: peripheral
+Advertising Features:
+	ActiveInstances: 0x00 (0)
+	SupportedInstances: 0x05 (5)
+	SupportedIncludes: tx-power
+	SupportedIncludes: appearance
+	SupportedIncludes: local-name
+	SupportedCapabilities.MaxAdvLen: 0x1f (31)
+	SupportedCapabilities.MaxScnRspLen: 0x1f (31)
+
+=== brightness ===
+Device 'intel_backlight' of class 'backlight':
+	Current brightness: 24 (24%)
+	Max brightness: 100
+
+
+=== battery ===
+--- /sys/class/power_supply/ADP1
+/sys/class/power_supply/ADP1/type:Mains
+--- /sys/class/power_supply/BATC
+/sys/class/power_supply/BATC/type:Battery
+/sys/class/power_supply/BATC/status:Full
+/sys/class/power_supply/BATC/capacity:100
+
+=== audio ===
+Server String: /run/user/1001/pulse/native
+Library Protocol Version: 35
+Server Protocol Version: 35
+Is Local: yes
+Client Index: 15
+Tile Size: 65472
+User Name: alex
+Host Name: vlenovo
+Server Name: pulseaudio
+Server Version: 17.0
+Default Sample Specification: s16le 2ch 44100Hz
+Default Channel Map: front-left,front-right
+Default Sink: alsa_output.platform-cht-bsw-rt5672.HiFi__Speaker__sink
+Default Source: alsa_input.platform-cht-bsw-rt5672.HiFi__Mic__source
+Cookie: 9daf:99f3
+0	alsa_output.platform-cht-bsw-rt5672.HiFi__Speaker__sink	module-alsa-card.c	s16le 2ch 48000Hz	SUSPENDED
+
+=== memory ===
+               total        used        free      shared  buff/cache   available
+Mem:           1.8Gi       611Mi       558Mi        47Mi       926Mi       1.2Gi
+Swap:          8.4Gi          0B       8.4Gi
+NAME           TYPE      SIZE USED PRIO
+/dev/zram0     partition 933M   0B  100
+/dev/mmcblk1p2 partition 7.4G   0B   -2
+
+=== recent Flick log ===
+Oct 05 18:00:47 vlenovo systemd[1]: Starting Flick mobile Wayland compositor...
+Oct 05 18:00:47 vlenovo (sleep)[873]: pam_unix(login:session): session opened for user alex(uid=1001) by (uid=0)
+Oct 05 18:00:49 vlenovo systemd[1]: Started Flick mobile Wayland compositor.
+Oct 05 18:00:50 vlenovo (flick)[878]: pam_unix(login:session): session opened for user alex(uid=1001) by (uid=0)

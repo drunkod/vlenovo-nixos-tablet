@@ -1,0 +1,18 @@
+● flick.service - Flick mobile Wayland compositor
+     Loaded: loaded (/etc/systemd/system/flick.service; enabled; preset: ignored)
+     Active: active (running) since Mon 2026-10-05 18:00:49 UTC; 15min ago
+ Invocation: ed3076be9c9245219c8908f2e453f230
+    Process: 873 ExecStartPre=/nix/store/mp7ba85zcqdj2sqwa29pql02s6nqpcxy-coreutils-9.7/bin/sleep 2 (code=exited, status=0/SUCCESS)
+   Main PID: 878 (.flick-wrapped)
+         IP: 0B in, 0B out
+         IO: 36K read, 4K written
+      Tasks: 0 (limit: 2132)
+     Memory: 1.5M (peak: 2.1M)
+        CPU: 106ms
+     CGroup: /system.slice/flick.service
+             ‣ 878 /nix/store/m172d1ag4vy4r7qpm6b1j05c1b2r35av-flick-unstable-2026-01-04/bin/flick
+
+Oct 05 18:00:47 vlenovo systemd[1]: Starting Flick mobile Wayland compositor...
+Oct 05 18:00:47 vlenovo (sleep)[873]: pam_unix(login:session): session opened for user alex(uid=1001) by (uid=0)
+Oct 05 18:00:49 vlenovo systemd[1]: Started Flick mobile Wayland compositor.
+Oct 05 18:00:50 vlenovo (flick)[878]: pam_unix(login:session): session opened for user alex(uid=1001) by (uid=0)
