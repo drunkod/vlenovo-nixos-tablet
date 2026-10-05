@@ -98,7 +98,7 @@ Touch delivery into Flick is now proven. OSK acceptance should proceed with the 
 
 ## ELAN power/reset isolation
 
-Additional runtime testing narrowed the failure below evdev/libinput:
+Additional runtime testing collected useful ELAN power/reset data, but the later timestamp correlation means it does not establish a failure below evdev/libinput:
 
 - ELAN-only i2c_hid_acpi rebind succeeds.
 - Probe-time control transactions succeed: HID descriptor read, hardware reset completion, report descriptor read, feature report reads, and IRQ 129 registration.
@@ -146,6 +146,6 @@ Live state after module load and another ELAN rebind:
 - ACPI PowerResource LNXPOWER:04 = \\_SB.I2C6.TCPR
 - LNXPOWER:04 status: 0 (off)
 
-This is now the leading hypothesis: Linux can enumerate/control the ELAN over I2C, but the firmware touchscreen power resource is not associated with TCS0, so the sensing/report path remains unpowered or disabled.
+This remains a useful suspend/resume and dead-touch investigation lead, but it is not the current root-cause conclusion: Flick received seven valid native TouchDown events before the rebind experiments, proving the sensing/report path can operate through the full Linux input stack.
 
-Do not add raw GPIO writes. Next test should invoke the firmware PowerResource _ON/_OFF path directly or add a controlled ACPI _PR0 override.
+Do not add raw GPIO writes or an ACPI _PR0 override while ordinary touch delivery into Flick is proven. Revisit the firmware PowerResource path only if a reproducible dead-touch state is captured with simultaneous IRQ/input evidence.
