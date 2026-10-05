@@ -103,6 +103,9 @@
   # Systemd overrides
   systemd.services."getty@tty1".enable = false;
   systemd.services.sxmo = {
+    # Flick owns tty1 in this generation. Keep SXMO installed for manual
+    # recovery, but do not race it against Flick at graphical.target startup.
+    wantedBy = lib.mkForce [ ];
     conflicts = [ "getty@tty1.service" ];
     serviceConfig = {
       TTYPath = lib.mkForce "/dev/tty1";

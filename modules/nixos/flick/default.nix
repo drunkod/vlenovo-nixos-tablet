@@ -45,6 +45,7 @@ in
       pulseaudio
       alsa-utils
       util-linux
+      xwayland
     ];
 
     systemd.services.flick = lib.mkIf cfg.autostart {
@@ -54,6 +55,7 @@ in
         "systemd-user-sessions.service"
         "seatd.service"
         "NetworkManager.service"
+        "sxmo.service"
       ];
       wants = [ "seatd.service" ];
       conflicts = [ "getty@tty1.service" "sxmo.service" ];
@@ -68,6 +70,7 @@ in
       };
 
       serviceConfig = {
+        ExecStartPre = "${pkgs.coreutils}/bin/sleep 2";
         ExecStart = "${cfg.package}/bin/flick";
         User = cfg.user;
         PAMName = "login";
