@@ -125,6 +125,10 @@
     monospace = [ "Fira Code Nerd Font" ];
   };
 
+  # Install brightnessctl's udev rule so members of the video group
+  # (including the Flick service user) can write the backlight brightness node.
+  services.udev.packages = [ pkgs.brightnessctl ];
+
   # Base system packages
   environment.systemPackages = with pkgs; [ git rsync ];
 
