@@ -122,13 +122,22 @@ The `85%` is not the tablet battery value:
 - kernel BATC status: Full
 - Slint `StatusBar` default battery property: 85
 
-Two upstream gaps explain why the native DRM backend can retain defaults:
-1. `BatteryStatus::read()` checks `battery`, `Battery`, `BAT0`, and `BAT1`, but not this tablet's `BATC`.
-2. The hwcomposer backend performs a 10-second `SystemStatus::refresh()` + `sync_quick_settings()` loop; the native udev backend lacks the equivalent periodic refresh block.
+Exact generation-56 source verification:
+- NixOS current, booted, and system profile all point to `91jbl1irxi6qjx0252s00mlz8ass3yin`.
+- Flick ExecStart is `mff55q54jy9x5jifkzy5fhriqshd90ng-flick-unstable-2026-01-04/bin/flick`.
+- The Nix package pins upstream Flick commit `729cdecedad05be3192b21f7d4310eb0ff7ae563`.
+- The exact pinned source contains `in property <int> battery: 85;` in `StatusBar` and `HomeScreen`, plus `battery-percent: 85` defaults in the root shell and Quick Settings.
+- The tablet exposes only one Battery-class power supply: `/sys/class/power_supply/BATC`, reporting `capacity=100` and `status=Full`.
+- `BatteryStatus::read()` checks only `battery`, `Battery`, `BAT0`, and `BAT1`; therefore it returns `None` on this tablet.
+- The native udev backend has no periodic `system_last_refresh` loop. Its battery setter calls are limited to Quick Settings render paths.
+- The udev Home render path has no `set_time()` or `set_battery_percent()` parity with hwcomposer.
+- The hwcomposer backend does have the 10-second refresh loop and explicitly pushes both current time and battery into Slint Home.
 
-Additionally, the udev backend has no `set_time()` call, so the Home clock is not yet proven to be live system time.
+Therefore the visible `85%` is the Slint default surviving into Home because live battery discovery fails on `BATC` and the native udev Home path does not overwrite the default. This is not a kernel battery-driver failure and no alternate 85%-reporting power-supply object exists.
 
-Do not treat the visible 85% as hardware telemetry. Fix status refresh separately from the already-passed lock-screen and input paths.
+The Home clock has the analogous native-udev setter gap and must not yet be treated as live telemetry.
+
+Do not change QML packaging, Qt dependencies, `FLICK_ROOT`, DRM selection, the systemd service, or lock-screen code for this issue. Keep generation 56 as the recovery checkpoint and fix status telemetry separately.
 
 ## OSK
 
