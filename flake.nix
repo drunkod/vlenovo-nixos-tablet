@@ -52,6 +52,7 @@
       import ./pkgs {
         pkgs = nixpkgs.legacyPackages.${system};
         pkgsUnstable = inputs.nixpkgs-unstable.legacyPackages.${system};
+        pkgsRust = inputs.nixpkgs-rust.legacyPackages.${system};
       });
 
     # Native graphics-driver research shell for the x86_64 Bay Trail tablet.

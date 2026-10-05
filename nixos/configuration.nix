@@ -8,6 +8,7 @@
 
     # Import the module that provides the sxmo-utils service.
     outputs.nixosModules.sxmo-utils
+    outputs.nixosModules.flick
   ];
 
   # Add the overlays. This is the only part the test can't share.

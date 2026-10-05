@@ -1,75 +1,136 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-: "${VLENOVO_HOST:=10.230.221.139}"
-TABLET_USER="${VLENOVO_USER:-alex}"
-
-NIX_LOCAL="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-FLICK_LOCAL="${FLICK_LOCAL:-$HOME/src/Flick}"
-
-NIX_REMOTE="/home/${TABLET_USER}/vlenovo-dev"
-FLICK_REMOTE="/home/${TABLET_USER}/Flick-dev"
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+HOST="${VLENOVO_HOST:-10.230.221.139}"
+USER_NAME="${VLENOVO_USER:-alex}"
+REMOTE_DIR="${VLENOVO_REMOTE_DIR:-/home/${USER_NAME}/vlenovo-flick-dev}"
 IDENTITY="${VLENOVO_IDENTITY:-$HOME/.ssh/id_ed25519}"
+TARGET="${USER_NAME}@${HOST}"
 
-SSH=(ssh -i "$IDENTITY" -o IdentitiesOnly=yes -o BatchMode=yes -o ConnectTimeout=8 -o StrictHostKeyChecking=accept-new "${TABLET_USER}@${VLENOVO_HOST}")
+SSH_OPTS=(
+  -i "$IDENTITY"
+  -o IdentitiesOnly=yes
+  -o BatchMode=yes
+  -o ConnectTimeout=8
+  -o ServerAliveInterval=15
+  -o ServerAliveCountMax=4
+  -o StrictHostKeyChecking=accept-new
+)
 
-sync_tree() {
-  echo "==> Syncing NixOS repository"
-  "${SSH[@]}" "rm -rf '$NIX_REMOTE/.git' '$FLICK_REMOTE/.git'"
-  rsync -az --delete     --exclude '.git'     --exclude '.git/'     --exclude '.codegraph/'     --exclude 'result'     --exclude 'debug/'     --exclude 'gpu-captures/'     -e "ssh -i '$IDENTITY' -o IdentitiesOnly=yes -o BatchMode=yes -o ConnectTimeout=8 -o StrictHostKeyChecking=accept-new"     "${NIX_LOCAL}/" "${TABLET_USER}@${VLENOVO_HOST}:${NIX_REMOTE}/"
-
-  echo "==> Syncing Flick repository"
-  rsync -az --delete     --exclude '.git'     --exclude '.git/'     --exclude 'shell/target/'     -e "ssh -i '$IDENTITY' -o IdentitiesOnly=yes -o BatchMode=yes -o ConnectTimeout=8 -o StrictHostKeyChecking=accept-new"     "${FLICK_LOCAL}/" "${TABLET_USER}@${VLENOVO_HOST}:${FLICK_REMOTE}/"
+ssh_tablet() {
+  ssh "${SSH_OPTS[@]}" "$TARGET" "$@"
 }
 
-case "${1:-}" in
+sync_repo() {
+  echo "==> Syncing $ROOT -> $TARGET:$REMOTE_DIR"
+  ssh_tablet "mkdir -p '$REMOTE_DIR' && rm -rf '$REMOTE_DIR/.git'"
+  rsync -az --delete --delete-excluded     --exclude '.git'     --exclude 'result'     --exclude '.codegraph/'     --exclude 'debug/'     --exclude 'gpu-captures/'     -e "ssh -i '$IDENTITY' -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=accept-new"     "$ROOT/" "$TARGET:$REMOTE_DIR/"
+}
+
+remote_nix() {
+  ssh "${SSH_OPTS[@]}" "$TARGET" "cd '$REMOTE_DIR' && $*"
+}
+
+usage() {
+  cat <<'EOF'
+Usage: ./bin/vlenovo-flick COMMAND
+
+  ssh          Open an interactive tablet shell
+  sync         Sync this branch to the tablet
+  package      Build only packages.x86_64-linux.flick
+  prebuild     Build Flick, then build the full NixOS generation
+  test         Temporary nixos-rebuild test activation
+  switch       Persist the already-validated generation
+  rollback     Return runtime to /run/booted-system
+  status       Show recovery-critical service state and generations
+  hardware     Run the Flick hardware acceptance script
+  logs         Show recent Flick/seatd/SXMO logs
+  manual-drm   20-second bounded Flick DRM test; always restarts SXMO
+
+The integration keeps services.flick.autostart=false until the DRM gate passes.
+EOF
+}
+
+cmd="${1:-help}"
+case "$cmd" in
+  ssh)
+    exec ssh "${SSH_OPTS[@]}" "$TARGET"
+    ;;
   sync)
-    "${SSH[@]}" "mkdir -p '$NIX_REMOTE' '$FLICK_REMOTE'"
-    sync_tree
+    sync_repo
     ;;
-  shell)
-    "${SSH[@]}" "mkdir -p '$NIX_REMOTE' '$FLICK_REMOTE'"
-    sync_tree
-    exec "${SSH[@]}" -t "cd '$NIX_REMOTE' && nix develop .#flick"
+  package)
+    sync_repo
+    remote_nix "nix build .#packages.x86_64-linux.flick --no-link --print-out-paths -L"
     ;;
-  cargo)
-    "${SSH[@]}" "mkdir -p '$NIX_REMOTE' '$FLICK_REMOTE'"
-    sync_tree
-    "${SSH[@]}" "cd '$NIX_REMOTE' && nix develop .#flick --command bash -lc 'cd $FLICK_REMOTE/shell && cargo build --release -j1'"
+  prebuild)
+    sync_repo
+    remote_nix "nix build .#packages.x86_64-linux.flick --no-link --print-out-paths -L"
+    remote_nix "sudo -n nixos-rebuild build --flake .#vlenovo --show-trace"
     ;;
-  build|test|switch|boot)
-    "${SSH[@]}" "mkdir -p '$NIX_REMOTE' '$FLICK_REMOTE'"
-    sync_tree
-    "${SSH[@]}" "cd '$NIX_REMOTE' && sudo nixos-rebuild '${1}' --flake .#vlenovo --show-trace"
+  test)
+    sync_repo
+    remote_nix "sudo -n nixos-rebuild test --flake .#vlenovo --show-trace"
+    ;;
+  switch)
+    sync_repo
+    remote_nix "sudo -n nixos-rebuild switch --flake .#vlenovo --show-trace"
     ;;
   rollback)
-    "${SSH[@]}" "sudo /run/booted-system/bin/switch-to-configuration test"
+    ssh -t "${SSH_OPTS[@]}" "$TARGET"       'sudo /run/booted-system/bin/switch-to-configuration test'
     ;;
   status)
-    exec "${SSH[@]}" 'echo "CURRENT=$(readlink -f /run/current-system)"; echo "BOOTED=$(readlink -f /run/booted-system)"; echo; systemctl --failed --no-pager; echo; nmcli -t -f DEVICE,TYPE,STATE,CONNECTION device status; echo; systemctl is-active sshd NetworkManager sxmo bluetooth'
+    ssh_tablet '
+      echo "CURRENT=$(readlink -f /run/current-system)"
+      echo "BOOTED=$(readlink -f /run/booted-system)"
+      echo
+      systemctl --failed --no-pager
+      echo
+      systemctl is-active sshd NetworkManager sxmo bluetooth seatd 2>/dev/null || true
+      echo
+      command -v flick || true
+      id
+    '
+    ;;
+  hardware)
+    sync_repo
+    ssh_tablet "cd '$REMOTE_DIR' && bash tests/flick-hardware.sh"
     ;;
   logs)
-    service="${2:-flick}"
-    exec "${SSH[@]}" "journalctl -b -u '$service' --no-pager -n 250"
+    ssh_tablet 'journalctl -b -u flick -u seatd -u sxmo --no-pager -n 250'
     ;;
-  ssh)
-    exec "${SSH[@]}"
+  manual-drm)
+    sync_repo
+    ssh -t "${SSH_OPTS[@]}" "$TARGET" "
+      set -e
+      cleanup() {
+        sudo -n systemctl start sxmo.service || true
+      }
+      trap cleanup EXIT HUP INT TERM
+      systemctl is-active sshd
+      systemctl is-active NetworkManager
+      systemctl is-active seatd
+      command -v flick
+      sudo -n systemctl stop sxmo.service
+      sleep 2
+      systemctl is-active sshd
+      systemctl is-active NetworkManager
+      sudo -n chvt 2 || true
+      export XDG_RUNTIME_DIR=/run/user/\$(id -u)
+      test -d "\$XDG_RUNTIME_DIR"
+      export LIBSEAT_BACKEND=seatd
+      export RUST_BACKTRACE=1
+      export RUST_LOG=info,flick=debug
+      timeout 20s flick --debug
+    "
+    ;;
+  help|-h|--help)
+    usage
     ;;
   *)
-    cat <<EOF
-Usage:
-  $0 sync
-  $0 shell
-  $0 cargo
-  $0 build
-  $0 test
-  $0 switch
-  $0 boot
-  $0 rollback
-  $0 status
-  $0 logs [service]
-  $0 ssh
-EOF
-    exit 1
+    echo "Unknown command: $cmd" >&2
+    usage >&2
+    exit 2
     ;;
 esac

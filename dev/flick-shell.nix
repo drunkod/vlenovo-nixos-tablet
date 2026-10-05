@@ -13,6 +13,7 @@ pkgs.mkShell {
     seatd
     libinput
     libdrm
+    libdisplay-info
     libgbm
     libglvnd
     libxkbcommon
@@ -21,6 +22,20 @@ pkgs.mkShell {
     wayland-protocols
     systemd
     pam
+    fontconfig
+    freetype
+    liberation_ttf
+    dejavu_fonts
+
+    networkmanager
+    bluez
+    util-linux
+    alsa-utils
+    pulseaudio
+    brightnessctl
+    pciutils
+    usbutils
+    evtest
   ];
 
   LIBCLANG_PATH = "${pkgs.llvmPackages.libclang.lib}/lib";
@@ -33,7 +48,16 @@ pkgs.mkShell {
     pkgs.seatd
     pkgs.libxkbcommon
     pkgs.systemd
+    pkgs.fontconfig
+    pkgs.freetype
   ] + ":/run/opengl-driver/lib";
+
+  FONTCONFIG_FILE = pkgs.makeFontsConf {
+    fontDirectories = [
+      pkgs.liberation_ttf
+      pkgs.dejavu_fonts
+    ];
+  };
 
   CARGO_BUILD_JOBS = "1";
   RUST_BACKTRACE = "1";

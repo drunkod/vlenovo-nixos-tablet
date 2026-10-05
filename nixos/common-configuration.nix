@@ -91,6 +91,15 @@
     deviceName = "vlenovo";
   };
 
+  # Stage 1 Flick integration: install the native DRM compositor and seat access
+  # while keeping SXMO as the active graphical session.  Autostart stays off
+  # until the manual TTY/DRM hardware gate succeeds.
+  services.flick = {
+    enable = true;
+    user = "alex";
+    autostart = false;
+  };
+
   # Systemd overrides
   systemd.services."getty@tty1".enable = false;
   systemd.services.sxmo = {

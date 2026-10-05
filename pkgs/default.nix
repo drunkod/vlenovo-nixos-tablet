@@ -1,8 +1,14 @@
 # Custom packages, that can be defined similarly to ones from nixpkgs
-{ pkgs, pkgsUnstable }:
+{ pkgs, pkgsUnstable, pkgsRust }:
 
 let
   frontends = pkgs.callPackage ./codemadness-frontends { };
+
+  # Keep the NixOS 25.05 package set while using a current Rust toolchain.
+  flickRustPlatform = pkgs.makeRustPlatform {
+    cargo = pkgsRust.cargo;
+    rustc = pkgsRust.rustc;
+  };
 
   # 1. Build the unwrapped package first and give it a name.
   sxmo-utils-unwrapped = pkgs.callPackage ./sxmo-1.17.1 {
@@ -12,6 +18,8 @@ let
 in
 {
   codemadness-frontends = frontends;
+
+  flick = pkgs.callPackage ./flick { rustPlatform = flickRustPlatform; };
 
   # 2. Call the wrapper, passing the unwrapped package and its dependencies to it.
   #    This final, wrapped package is what will be used by your system.

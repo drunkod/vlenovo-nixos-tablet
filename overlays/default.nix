@@ -8,6 +8,7 @@
     import ../pkgs {
       pkgs = final;
       pkgsUnstable = inputs.nixpkgs-unstable.legacyPackages.${final.system};
+      pkgsRust = inputs.nixpkgs-rust.legacyPackages.${final.system};
     };
 
   # This one contains whatever you want to overlay.

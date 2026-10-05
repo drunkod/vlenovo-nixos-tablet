@@ -1,27 +1,33 @@
-From 5dd41e92cc069dc31a724f0f169500d489d6ce92 Mon Sep 17 00:00:00 2001
+From 33f8d0caca6e511004b794e732a15b4e15329a5b Mon Sep 17 00:00:00 2001
 From: drunkod <drunkod@gmail.com>
 Date: Sun, 4 Oct 2026 19:04:56 +0500
 Subject: [PATCH] Enable native DRM backend for NixOS Lenovo tablet
 
 ---
- shell/src/backend/mod.rs | 3 +++
- shell/src/main.rs        | 6 +++---
- 2 files changed, 6 insertions(+), 3 deletions(-)
+ shell/src/backend/mod.rs | 11 +++--------
+ shell/src/main.rs        |  6 +++---
+ 2 files changed, 6 insertions(+), 11 deletions(-)
 
 diff --git a/shell/src/backend/mod.rs b/shell/src/backend/mod.rs
-index 08e2639..91b4f4c 100644
+index 08e2639..2dcfa8d 100644
 --- a/shell/src/backend/mod.rs
 +++ b/shell/src/backend/mod.rs
-@@ -9,6 +9,9 @@
+@@ -9,12 +9,7 @@
  
  pub mod winit;
  
+-// FFI bindings to our C shim (libflick_hwc)
+-pub mod hwc_shim_ffi;
 +// Generic Linux DRM/KMS + libinput backend.
 +pub mod udev;
-+
- // FFI bindings to our C shim (libflick_hwc)
- pub mod hwc_shim_ffi;
  
+-// HWComposer backend implementation
+-pub mod hwcomposer;
+-
+-// Keep old FFI for reference (will be removed)
+-#[allow(dead_code)]
+-pub mod hwcomposer_ffi;
++// Android/HWComposer modules are intentionally excluded from native NixOS builds.
 diff --git a/shell/src/main.rs b/shell/src/main.rs
 index 2ef1e9f..5d11e4e 100644
 --- a/shell/src/main.rs
