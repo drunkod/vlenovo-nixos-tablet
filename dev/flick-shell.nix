@@ -59,6 +59,6 @@ pkgs.mkShell {
     ];
   };
 
-  CARGO_BUILD_JOBS = "1";
+  CARGO_BUILD_JOBS = "2";
   RUST_BACKTRACE = "1";
 }

@@ -78,7 +78,7 @@ rustPlatform.buildRustPackage rec {
 
   env = {
     LIBCLANG_PATH = "${llvmPackages.libclang.lib}/lib";
-    CARGO_BUILD_JOBS = "1";
+    CARGO_BUILD_JOBS = "2";
     LD_LIBRARY_PATH = lib.makeLibraryPath [
       fontconfig
       freetype
