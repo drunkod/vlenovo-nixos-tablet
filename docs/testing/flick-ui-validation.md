@@ -37,14 +37,21 @@ Do not change calibration, libinput transforms, Smithay, or Flick touch code yet
 ## Brightness
 
 Backlight: /sys/class/backlight/intel_backlight
-Current permissions: root:root 0644
-Flick runs as alex, who is in video but cannot write the brightness node.
 
-Flick writes sysfs directly and falls back to brightnessctl.
-brightnessctl ships 90-brightnessctl.rules to chgrp video + chmod g+w, but that rule is not active in the current NixOS udev rules.
-
-Likely fix (separate commit):
+Generation 55 activates brightnessctl's packaged udev rule via:
 services.udev.packages = [ pkgs.brightnessctl ];
+
+Validated result:
+- brightness node: root:video 0664
+- alex write access: PASS
+- brightness value remained unchanged during permission validation
+- Flick remained active with NRestarts=0
+- SSH/NetworkManager remained active
+- zero failed systemd units
+
+Flick writes sysfs directly and falls back to brightnessctl, so the service now has the required write path.
+
+Physical Flick slider movement is still pending as a separate UI acceptance test.
 
 ## OSK
 
