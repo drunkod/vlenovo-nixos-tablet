@@ -23,6 +23,8 @@
 , makeFontsConf
 , symlinkJoin
 , makeWrapper
+, stdenvNoCC
+, qt5
 }:
 
 let
@@ -120,19 +122,79 @@ let
     mainProgram = "flick";
   };
 };
+
+  # Keep the validated Rust compositor derivation unchanged. Package the
+  # external QML shell assets separately so UI integration does not trigger
+  # another Rust/Smithay rebuild.
+  flick-assets = stdenvNoCC.mkDerivation {
+    pname = "flick-assets";
+    version = flick-unwrapped.version;
+    src = flick-unwrapped.src;
+
+    dontConfigure = true;
+    dontBuild = true;
+    dontWrapQtApps = true;
+
+    nativeBuildInputs = [ qt5.wrapQtAppsHook ];
+    buildInputs = [
+      qt5.qtbase
+      qt5.qtdeclarative
+      qt5.qtquickcontrols2
+      qt5.qtwayland
+    ];
+
+    installPhase = ''
+      runHook preInstall
+
+      mkdir -p \
+        "$out/share/flick/apps/lockscreen" \
+        "$out/share/flick/apps/settings"
+
+      cp -R apps/lockscreen/. "$out/share/flick/apps/lockscreen/"
+      install -m755 apps/settings/flick-settings-ctl \
+        "$out/share/flick/apps/settings/flick-settings-ctl"
+      install -m755 ${./run_lockscreen_nixos.sh} \
+        "$out/share/flick/apps/lockscreen/run_lockscreen.sh"
+
+      # The lock-screen QML needs a state directory, but Qt5 qmlscene does not
+      # forward arbitrary application arguments. Replace upstream Theme.stateDir
+      # references with a tiny per-user singleton generated at runtime from
+      # FLICK_STATE_DIR.
+      for qml in main.qml MediaControls.qml LockScreen.qml; do
+        sed -i '1i import FlickRuntime 1.0' \
+          "$out/share/flick/apps/lockscreen/$qml"
+        substituteInPlace "$out/share/flick/apps/lockscreen/$qml" \
+          --replace-fail "Theme.stateDir" "Runtime.stateDir"
+      done
+
+      substituteInPlace "$out/share/flick/apps/lockscreen/run_lockscreen.sh" \
+        --replace-fail "@qmlscene@" "${qt5.qtdeclarative.dev}/bin/qmlscene"
+
+      patchShebangs "$out/share/flick/apps"
+      runHook postInstall
+    '';
+
+    postFixup = ''
+      wrapQtApp "$out/share/flick/apps/lockscreen/run_lockscreen.sh"
+    '';
+  };
 in
 symlinkJoin {
   name = "flick-${flick-unwrapped.version}";
-  paths = [ flick-unwrapped ];
+  paths = [ flick-unwrapped flick-assets ];
   nativeBuildInputs = [ makeWrapper ];
 
   # Smithay/winit load these at runtime with dlopen(), so ordinary ELF
   # references are not enough for Nix to discover them automatically.
   postBuild = ''
     wrapProgram "$out/bin/flick" \
+      --set FLICK_ROOT "$out/share/flick" \
       --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [ wayland libxkbcommon libglvnd libgbm ]}:/run/opengl-driver/lib"
   '';
 
-  passthru.unwrapped = flick-unwrapped;
+  passthru = {
+    unwrapped = flick-unwrapped;
+    assets = flick-assets;
+  };
   meta = flick-unwrapped.meta;
 }

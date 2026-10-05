@@ -61,6 +61,9 @@ in
 
       environment = {
         FLICK_BACKEND = "drm";
+        FLICK_ROOT = "${cfg.package}/share/flick";
+        FLICK_STATE_DIR = "/home/${cfg.user}/.local/state/flick";
+        FLICK_USER = cfg.user;
         LIBSEAT_BACKEND = "seatd";
         QT_QPA_PLATFORM = "wayland";
         RUST_BACKTRACE = "1";
