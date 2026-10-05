@@ -34,6 +34,33 @@ libinput / Smithay / Flick: not reached
 
 Do not change calibration, libinput transforms, Smithay, or Flick touch code yet.
 
+### ACPI reset/power discovery
+
+DMI identifies the tablet as Lenovo Miix 2 10 (20359).
+
+The live DSDT defines the touchscreen as `\\_SB.I2C6.TCS0` with:
+- HID: ELAN1001
+- I2C address: 0x10
+- interrupt resource: 0x45 (Linux ELAN IRQ 129)
+- output GPIO: `\\_SB.GPO0` pin 0x3C (60)
+
+`TCS0._PS0` performs an explicit reset/enable sequence:
+1. drive `GPO0.TCD3` low
+2. wait 5 ms + 30 ms
+3. drive `GPO0.TCD3` high
+4. wait 300 ms
+
+The GPO0 ACPI field maps `TCD3` exactly to GPIO pin 60.
+
+Linux GPIO debugfs currently reports that pin as:
+`gpio-60 (ACPI:OpRegion) out lo`
+
+This is suspicious because the firmware power-on/reset sequence leaves TCD3 high. The ACPI device reports D0, and the ELAN I2C device itself has runtime PM unsupported/disabled. The parent Bay Trail I2C controller can autosuspend, but forced-awake test windows without simultaneous physical IRQ activity were inconclusive.
+
+A driver unbind/rebind successfully re-enumerated the ELAN device but did not prove a reset fix because those observation windows also had no simultaneous touch IRQ activity.
+
+Do not directly take over GPIO60: it is owned by ACPI:OpRegion. Prefer a firmware-method or driver-level reset diagnostic before considering a kernel quirk.
+
 ## Brightness
 
 Backlight: /sys/class/backlight/intel_backlight
