@@ -24,15 +24,22 @@ Raw range: X 0..2880, Y 0..1856, 10 MT slots
 6. No new i2c-hid/hid-multitouch kernel errors were logged during the test.
 7. I2C controller 80860F41:05 reports runtime_status=suspended during the touch IRQ activity.
 
-### Current isolation
+### Corrected current isolation
 
-Physical controller / IRQ: PASS
-i2c_hid_acpi input report delivery: FAIL / no reports observed
-HID core: no reports observed
-hid-multitouch / evdev: not reached
-libinput / Smithay / Flick: not reached
+Later timestamp correlation showed that Flick had already logged seven native `>>>TOUCH>>> DOWN` events at 19:25-19:26 UTC, before the later ELAN rebind experiments. Those records include valid transformed screen coordinates.
 
-Do not change calibration, libinput transforms, Smithay, or Flick touch code yet.
+Therefore the proven path is:
+
+- physical controller / IRQ: PASS
+- i2c_hid_acpi report delivery: PASS
+- HID core / hid-multitouch: PASS
+- libinput / Smithay: PASS
+- Flick native TouchDown handler: PASS
+- Flick lock-screen gesture/UI response: PENDING
+
+The earlier empty evtest, HID-debugfs, and hidraw capture windows did not coincide with a separately confirmed physical touch and must not be treated as proof of a lower-level input failure.
+
+Do not change calibration, libinput transforms, Smithay, or Flick touch code based on those empty capture windows.
 
 ### ACPI reset/power discovery
 
@@ -86,7 +93,7 @@ Flick text-input-v3 and internal Slint keyboard initialize.
 The native udev backend has keyboard action handling.
 check_keyboard_request() is currently a stub returning None.
 
-OSK acceptance remains blocked on either working touch or a text-input-v3 client.
+Touch delivery into Flick is now proven. OSK acceptance should proceed with the lock-screen bottom-edge gesture first, then a text-input-v3 client if needed.
 
 
 ## ELAN power/reset isolation
