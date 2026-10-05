@@ -21,9 +21,12 @@
 , liberation_ttf
 , dejavu_fonts
 , makeFontsConf
+, symlinkJoin
+, makeWrapper
 }:
 
-rustPlatform.buildRustPackage rec {
+let
+  flick-unwrapped = rustPlatform.buildRustPackage rec {
   pname = "flick";
   version = "unstable-2026-01-04";
 
@@ -38,6 +41,8 @@ rustPlatform.buildRustPackage rec {
     ../../patches/flick/0001-enable-native-drm-backend.patch
     ../../patches/flick/0002-add-cargo-lock.patch
     ../../patches/flick/0003-pin-smithay-jan-2026.patch
+    ../../patches/flick/0004-refresh-native-drm-backend-api.patch
+    ../../patches/flick/0005-handle-new-ui-actions.patch
   ];
 
   # Upstream does not currently ship shell/Cargo.lock. Use the lock file
@@ -91,12 +96,19 @@ rustPlatform.buildRustPackage rec {
     };
   };
 
+  # cargo-auditable 0.6.5 panics under the Mac's amd64/Rosetta Linux builder
+  # after rustc succeeds. Audit metadata is non-essential for runtime; disable it
+  # so this x86_64 package remains reproducibly buildable on the offload builder.
+  auditable = false;
+
   doCheck = false;
 
   installPhase = ''
     runHook preInstall
     mkdir -p "$out/bin"
-    cp target/release/flick "$out/bin/flick"
+    flickBin="$(find target -type f -path '*/release/flick' -print -quit)"
+    test -n "$flickBin"
+    install -m755 "$flickBin" "$out/bin/flick"
     runHook postInstall
   '';
 
@@ -107,4 +119,20 @@ rustPlatform.buildRustPackage rec {
     platforms = lib.platforms.linux;
     mainProgram = "flick";
   };
+};
+in
+symlinkJoin {
+  name = "flick-${flick-unwrapped.version}";
+  paths = [ flick-unwrapped ];
+  nativeBuildInputs = [ makeWrapper ];
+
+  # Smithay/winit load these at runtime with dlopen(), so ordinary ELF
+  # references are not enough for Nix to discover them automatically.
+  postBuild = ''
+    wrapProgram "$out/bin/flick" \
+      --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [ wayland libxkbcommon libglvnd libgbm ]}:/run/opengl-driver/lib"
+  '';
+
+  passthru.unwrapped = flick-unwrapped;
+  meta = flick-unwrapped.meta;
 }

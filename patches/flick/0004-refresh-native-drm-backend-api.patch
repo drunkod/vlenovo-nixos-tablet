@@ -1,0 +1,94 @@
+--- a/shell/src/backend/udev.rs
++++ b/shell/src/backend/udev.rs
+@@ -887,17 +887,11 @@
+     tracing::info!("render_surface: view={:?}, gesture_active={}, qs_gesture_active={}, qs_progress={:.2}, bg_color={:?}",
+                    shell_view, gesture_active, state.qs_gesture_active, state.qs_gesture_progress, bg_color);
+ 
+-    // Render touch effects to buffers (if enabled and any active effects)
+-    // We need two separate elements since MemoryRenderBufferRenderElement doesn't implement Clone
+-    let touch_effect_pixels: Option<Vec<u8>> = if state.touch_effects_enabled && !state.touch_effects.is_empty() {
+-        let touch_renderer = crate::touch_effects::TouchEffectRenderer::new(
+-            state.screen_size.w as u32,
+-            state.screen_size.h as u32,
+-        );
+-        touch_renderer.render(&state.touch_effects)
+-    } else {
+-        None
+-    };
++    // The January 2026 touch-effects implementation moved to the GL shader path
++    // and no longer provides the old CPU TouchEffectRenderer used by this backend.
++    // Keep native DRM rendering functional for now and leave the decorative touch
++    // overlay disabled until the shader path is wired into the Smithay renderer.
++    let touch_effect_pixels: Option<Vec<u8>> = None;
+ 
+     // Helper function to create a touch effect element from pixels
+     fn create_touch_effect_element(
+@@ -1015,7 +1009,6 @@
+                         slint_ui.set_dnd_enabled(state.system.dnd.enabled);
+                         slint_ui.set_flashlight_enabled(crate::system::Flashlight::is_on());
+                         slint_ui.set_airplane_enabled(crate::system::AirplaneMode::is_enabled());
+-                        slint_ui.set_rotation_locked(state.system.rotation_lock.locked);
+                         slint_ui.set_touch_effects_enabled(state.touch_effects_enabled);
+                         slint_ui.set_wifi_ssid(state.system.wifi_ssid.as_deref().unwrap_or(""));
+                         slint_ui.set_battery_percent(state.shell.quick_settings.battery_percent as i32);
+@@ -1945,7 +1938,6 @@
+             slint_ui.set_dnd_enabled(state.system.dnd.enabled);
+             slint_ui.set_flashlight_enabled(crate::system::Flashlight::is_on());
+             slint_ui.set_airplane_enabled(crate::system::AirplaneMode::is_enabled());
+-            slint_ui.set_rotation_locked(state.system.rotation_lock.locked);
+             slint_ui.set_touch_effects_enabled(state.touch_effects_enabled);
+             slint_ui.set_wifi_ssid(state.system.wifi_ssid.as_deref().unwrap_or(""));
+             slint_ui.set_battery_percent(state.shell.quick_settings.battery_percent as i32);
+@@ -2092,7 +2084,6 @@
+             slint_ui.set_dnd_enabled(state.system.dnd.enabled);
+             slint_ui.set_flashlight_enabled(crate::system::Flashlight::is_on());
+             slint_ui.set_airplane_enabled(crate::system::AirplaneMode::is_enabled());
+-            slint_ui.set_rotation_locked(state.system.rotation_lock.locked);
+             slint_ui.set_touch_effects_enabled(state.touch_effects_enabled);
+             slint_ui.set_wifi_ssid(state.system.wifi_ssid.as_deref().unwrap_or(""));
+             slint_ui.set_battery_percent(state.shell.quick_settings.battery_percent as i32);
+@@ -2940,7 +2931,7 @@
+                     // If touching a category, use start_category_touch for long press detection
+                     if let Some(category) = touched_category {
+                         info!("Touch down on category {:?}", category);
+-                        state.shell.start_category_touch(touch_pos, category);
++                        state.shell.start_category_touch(touch_pos, &category);
+                     } else {
+                         // Not on a category - just track for scrolling
+                         state.shell.start_home_touch(touch_pos.y, None);
+@@ -3747,7 +3738,7 @@
+                         if let Some(app_id) = state.shell.hit_test_category(pos) {
+                             info!("App tap detected: app_id={:?}", app_id);
+                             // Use get_exec() which properly handles Settings (uses built-in Flick Settings)
+-                            if let Some(exec) = state.shell.app_manager.get_exec(app_id) {
++                            if let Some(exec) = state.shell.app_manager.get_exec(&app_id) {
+                                 // First, try to focus an existing window for this app
+                                 if state.try_focus_existing_app(&exec) {
+                                     info!("Focused existing window for: {}", exec);
+@@ -3756,7 +3747,7 @@
+                                     info!("Launching app: {} ({})", app_id, exec);
+                                     let socket = state.socket_name.to_str().unwrap_or("wayland-1");
+                                     let text_scale = state.shell.text_scale;
+-                                    if let Err(e) = crate::spawn_user::spawn_app_with_logging(&exec, app_id, socket, text_scale) {
++                                    if let Err(e) = crate::spawn_user::spawn_app_with_logging(&exec, &app_id, socket, text_scale as f64) {
+                                         error!("Failed to launch app: {}", e);
+                                     }
+                                     // Don't call app_launched() here - stay on Home until window appears
+@@ -3899,7 +3890,7 @@
+                                             // Launch the settings app as user
+                                             let socket = state.socket_name.to_str().unwrap_or("wayland-1");
+                                             let text_scale = state.shell.text_scale;
+-                                            if let Err(e) = crate::spawn_user::spawn_as_user(&exec_clone, socket, text_scale) {
++                                            if let Err(e) = crate::spawn_user::spawn_as_user(&exec_clone, socket, text_scale as f64) {
+                                                 tracing::error!("Failed to launch settings app '{}': {}", exec_clone, e);
+                                             }
+                                         }
+@@ -3912,7 +3903,7 @@
+                                     info!("Brightness set to {:.0}%", value * 100.0);
+                                 }
+                                 QuickSettingsAction::VolumeChanged(value) => {
+-                                    state.system.set_volume(value as i32);
++                                    state.system.set_volume(value);
+                                     info!("Volume set to {}%", value);
+                                 }
+                             }
