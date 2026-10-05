@@ -45,6 +45,7 @@ let
     ../../patches/flick/0003-pin-smithay-jan-2026.patch
     ../../patches/flick/0004-refresh-native-drm-backend-api.patch
     ../../patches/flick/0005-handle-new-ui-actions.patch
+    ../../patches/flick/0006-fix-native-status-telemetry.patch
   ];
 
   # Upstream does not currently ship shell/Cargo.lock. Use the lock file
