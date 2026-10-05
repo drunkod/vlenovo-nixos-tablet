@@ -1,6 +1,7 @@
 # Flick UI Validation
 
-Generation: 54
+Base generation: 54
+Current validated generation: 56
 Base checkpoint: 998ec38 (flick-stage2-working)
 Branch: flick-ui-validation
 
@@ -86,6 +87,48 @@ Validated result:
 Flick writes sysfs directly and falls back to brightnessctl, so the service now has the required write path.
 
 Physical Flick slider movement is still pending as a separate UI acceptance test.
+
+## Lock screen and unlock
+
+Generation 56 packages the Qt/QML lock-screen runtime into the Flick package and sets:
+- `FLICK_ROOT` to the immutable package tree
+- `FLICK_STATE_DIR=/home/alex/.local/state/flick`
+- `FLICK_USER=alex`
+
+Boot acceptance:
+- QML lock-screen child starts automatically: PASS
+- Qt Wayland connection and xdg-toplevel mapping: PASS
+- Flick remains NRestarts=0: PASS
+- slide-to-unlock touch interaction: PASS
+- PIN entry UI transition: PASS
+- built-in test PIN acceptance: PASS
+- QML exits with code 0: PASS
+- launcher creates `unlock_signal`: PASS
+- Flick consumes the signal and transitions to `view=Home`: PASS
+- post-unlock state: `lock_active=false`, `space_count=0`
+- SSH, NetworkManager, seatd remain active
+- zero failed systemd units
+
+The PIN screen currently uses Flick's upstream hard-coded test credential when no `lock_config.json` exists; this is not yet production authentication.
+
+Qt emitted several `TouchPointPressed without previous release event` warnings during lock-screen interaction. Touch nevertheless completed the slide and PIN flows. Keep this as a follow-up input-sequence quality issue rather than a blocker.
+
+## Home status bar
+
+After unlock, the Home status bar displays a clock at left and `85%` at right.
+
+The `85%` is not the tablet battery value:
+- kernel BATC capacity: 100
+- kernel BATC status: Full
+- Slint `StatusBar` default battery property: 85
+
+Two upstream gaps explain why the native DRM backend can retain defaults:
+1. `BatteryStatus::read()` checks `battery`, `Battery`, `BAT0`, and `BAT1`, but not this tablet's `BATC`.
+2. The hwcomposer backend performs a 10-second `SystemStatus::refresh()` + `sync_quick_settings()` loop; the native udev backend lacks the equivalent periodic refresh block.
+
+Additionally, the udev backend has no `set_time()` call, so the Home clock is not yet proven to be live system time.
+
+Do not treat the visible 85% as hardware telemetry. Fix status refresh separately from the already-passed lock-screen and input paths.
 
 ## OSK
 
