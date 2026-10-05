@@ -88,3 +88,57 @@ check_keyboard_request() is currently a stub returning None.
 
 OSK acceptance remains blocked on either working touch or a text-input-v3 client.
 
+
+## ELAN power/reset isolation
+
+Additional runtime testing narrowed the failure below evdev/libinput:
+
+- ELAN-only i2c_hid_acpi rebind succeeds.
+- Probe-time control transactions succeed: HID descriptor read, hardware reset completion, report descriptor read, feature report reads, and IRQ 129 registration.
+- Each rebind creates a fresh hid-multitouch instance and hidraw2.
+- Probe produces a few IRQs, but a post-rebind IRQ-only observation stayed flat at 491 for 30 seconds during the requested touch window.
+- hidraw capture produced no asynchronous reports.
+
+### ACPI firmware resources
+
+The tablet firmware defines the touchscreen as \\_SB.I2C6.TCS0.
+
+Decoded _CRS:
+- I2C bus: \\_SB.I2C6
+- 7-bit address: 0x10
+- IRQ: ACPI interrupt 69, level-triggered, active-high, exclusive
+- GPIO: \\_SB.GPO0 pin 60 (0x3c), output-only
+
+TCS0 _PS0 toggles GPO0.TCD3 low, waits, then high and waits 300 ms.
+GPO0.TCD3 maps exactly to pin 60.
+
+I2C6 also defines PowerResource TCPR:
+- _ON: TCD3 low -> PMIC TCON high -> TCD3 high
+- _OFF: PMIC TCON low
+- TCON maps to Crystal Cove PMIC GPIO 11
+
+However, TCS0 does not declare TCPR in _PR0.
+
+### Missing Crystal Cove GPIO autoload
+
+Kernel config: CONFIG_GPIO_CRYSTAL_COVE=m.
+The module exists as gpio-crystalcove.ko.xz, but:
+- it was not loaded on generation 54
+- the platform child MODALIAS is platform:crystal_cove_gpio
+- modules.alias contains no matching alias
+- therefore udev did not autoload the module
+
+A reversible manual load of gpio_crystalcove succeeded:
+- crystal_cove_gpio bound
+- PMIC gpiochip registered
+- SSH, NetworkManager and Flick remained active
+
+Live state after module load and another ELAN rebind:
+- GPO0 pin 60 / TCD3: output low
+- Crystal Cove GPIO11 / TCON: output low
+- ACPI PowerResource LNXPOWER:04 = \\_SB.I2C6.TCPR
+- LNXPOWER:04 status: 0 (off)
+
+This is now the leading hypothesis: Linux can enumerate/control the ELAN over I2C, but the firmware touchscreen power resource is not associated with TCS0, so the sensing/report path remains unpowered or disabled.
+
+Do not add raw GPIO writes. Next test should invoke the firmware PowerResource _ON/_OFF path directly or add a controlled ACPI _PR0 override.
