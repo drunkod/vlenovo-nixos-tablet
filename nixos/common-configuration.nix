@@ -91,13 +91,13 @@
     deviceName = "vlenovo";
   };
 
-  # Stage 1 Flick integration: install the native DRM compositor and seat access
-  # while keeping SXMO as the active graphical session.  Autostart stays off
-  # until the manual TTY/DRM hardware gate succeeds.
+  # Stage 2 Flick integration: the bounded native DRM/KMS hardware gate passed.
+  # Enable Flick as the tty1 graphical session; keep the previous NixOS
+  # generation available so this can be rolled back independently of the kernel.
   services.flick = {
     enable = true;
     user = "alex";
-    autostart = false;
+    autostart = true;
   };
 
   # Systemd overrides
