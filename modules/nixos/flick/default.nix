@@ -45,7 +45,6 @@ in
       pulseaudio
       alsa-utils
       util-linux
-      xwayland
     ];
 
     systemd.services.flick = lib.mkIf cfg.autostart {
