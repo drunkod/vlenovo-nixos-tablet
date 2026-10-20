@@ -64,3 +64,8 @@ Attribute: \`packages.x86_64-linux.flick-dmabuf-experimental\`. This variant con
 The patch advertises only EGL-reported DMA-BUF formats from the exact DRM device render node, queues native Wayland import requests, validates each with \`GpuData.renderer.import_dmabuf(...)\`, then calls the corresponding Smithay success/failure notifier. If render node discovery or feedback creation fails, the existing \`wl_shm\` path remains. The HWC path is unchanged.
 
 **Status: source patch checks only. No Rust compiler or runtime test has passed yet. Do not deploy or restart Flick.** A clean compilation in the same pinned Mac/Linux builder is the next gate, followed by exact runtime closure/hash verification and a physical rollback plan. Wayland-EGL/Qt5 may still require \`wl_drm\` for acceleration; the patch is an isolated hypothesis, not a claim to have eliminated llvmpipe.
+
+
+### Third variant built successfully
+
+The Mac-hosted x86_64 Linux build of flick-dmabuf-experimental completed (23 min 29 sec), output /nix/store/3bbhjcb0f678069dn7l112iazk2ak5wn-flick-unstable-2026-01-04, executable SHA-256 a049d7b41bcd9939831a94a54e764b437d3c879127ba52670a4d943848b12b2c. The verification helper now accepts a dmabuf variant; its explicit --stage operation verified checksum, x86_64 ELF, Nix runtime references, and --help on tablet. See docs/graphics/FLICK_DMABUF_BUILD_RESULT_2026-10-21.md for evidence and remaining runtime gates. **No compositor restart performed.**

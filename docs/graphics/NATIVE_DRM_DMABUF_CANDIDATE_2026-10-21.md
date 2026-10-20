@@ -1,4 +1,4 @@
-# Native DRM validated DMA-BUF candidate — not yet compiled
+# Native DRM validated DMA-BUF candidate — compiled, staged; not activated
 
 This independent, experimental candidate addresses the verified absence of
 \`zwp_linux_dmabuf_v1\` in the tablet's Flick Wayland registry and Qt Quick's
@@ -20,7 +20,7 @@ Qt 5.15's Wayland-EGL backend may also depend on \`wl_drm\`.
   and preserves native \`wl_shm\` fallback if DMA-BUF cannot be initialized.
 - Its source patch has passed \`git apply --check\`, \`git apply\` and
   \`patch --dry-run\` on the reconstructed deployed Flick source plus
-  the seventh logging patch. **Not yet compiled or activated.**
+  the seventh logging patch. **Compiled and staged, but not activated.**
 
 ## Next checks
 
@@ -42,3 +42,8 @@ Qt 5.15's Wayland-EGL backend may also depend on \`wl_drm\`.
 
 The prior QML Slint render-skip and logging-only binaries remain separately
 staged and are not modified by this experiment.
+
+
+## Outcome: successful build and safe tablet staging
+
+The isolated x86_64 Linux release build succeeded on the MacBook (23 min 29 sec). Nix output is /nix/store/3bbhjcb0f678069dn7l112iazk2ak5wn-flick-unstable-2026-01-04, executable SHA-256 a049d7b41bcd9939831a94a54e764b437d3c879127ba52670a4d943848b12b2c. Architecture, Nix store integrity, runtime references and both Mac and tablet --help tests passed. The byte-identical executable is staged in /home/alex/lenovo-mvp/builds/flick-dmabuf-experimental-x86_64. It was **not activated**. Detailed evidence: FLICK_DMABUF_BUILD_RESULT_2026-10-21.md. The older development checklist remains for historical context; compilation is complete but GUI performance and safety are not established.
