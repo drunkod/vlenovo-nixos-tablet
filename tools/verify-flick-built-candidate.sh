@@ -27,8 +27,12 @@ case "$variant" in
         attr="packages.x86_64-linux.flick-dmabuf-experimental"
         name="flick-dmabuf-experimental-x86_64"
         ;;
+    qt-egl)
+        attr="packages.x86_64-linux.flick-qt-egl-experimental"
+        name="flick-qt-egl-experimental-x86_64"
+        ;;
     *)
-        echo "Usage: $0 {logging|qml|dmabuf} [--stage]" >&2
+        echo "Usage: $0 {logging|qml|dmabuf|qt-egl} [--stage]" >&2
         exit 2
         ;;
 esac
