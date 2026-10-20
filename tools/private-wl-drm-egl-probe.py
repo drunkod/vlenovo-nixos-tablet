@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 import ctypes as C
 import os
+import re
 from pathlib import Path
 import signal
 import time
@@ -35,6 +36,8 @@ def main():
     args=p.parse_args()
     if args.seconds>90 or args.seconds<3:
         p.error("--seconds must be 3..90")
+    if not re.fullmatch(r"[A-Za-z0-9_-]{1,48}", args.socket):
+        p.error("private socket name must contain only ASCII letters/numbers/_/-")
     root=Path(args.runtime).resolve()
     home=Path("/run/user")/str(os.getuid())
     if not root.is_relative_to(home) or root==home:
