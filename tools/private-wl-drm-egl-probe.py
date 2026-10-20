@@ -47,6 +47,8 @@ def main():
     server=None
     gbmdev=None
     egl_display=None
+    egl_unbind=None
+    egl_bound=False
     render_fd=None
     try:
         w=C.CDLL(args.wayland_lib)
@@ -87,6 +89,11 @@ def main():
             bind=C.CFUNCTYPE(cuint,cvoid,cvoid)(address)
             if bind(egl_display,server)!=1:
                 raise RuntimeError("eglBindWaylandDisplayWL returned false")
+            egl_bound=True
+            unbind_address=get_proc(b"eglUnbindWaylandDisplayWL")
+            if not unbind_address:
+                raise RuntimeError("eglUnbindWaylandDisplayWL unavailable")
+            egl_unbind=C.CFUNCTYPE(cuint,cvoid,cvoid)(unbind_address)
         if wl_display_add_socket(server,args.socket.encode())!=0:
             raise RuntimeError("wl_display_add_socket failed")
         print(f"EGL_VERSION={major.value}.{minor.value}",flush=True)
@@ -108,7 +115,9 @@ def main():
             wl_display_flush_clients(server)
         print("PRIVATE_SERVER_EXIT=OK",flush=True)
     finally:
-        # The private compositor has no clients or outputs after probe.
+        # Undo server-side EGL global binding before deleting wl_display.
+        if egl_bound and egl_unbind is not None:
+            egl_unbind(egl_display,server)
         if server:
             wl_display_destroy(server)
         if egl_display:
