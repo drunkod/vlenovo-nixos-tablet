@@ -1,0 +1,185 @@
+## Wayland EGL_PLATFORM=wayland
+GBM platform:
+EGL API version: 1.5
+EGL vendor string: Mesa Project
+EGL version string: 1.5
+EGL client APIs: OpenGL OpenGL_ES
+OpenGL core profile vendor: Intel
+OpenGL core profile renderer: Mesa Intel(R) HD Graphics (BYT)
+OpenGL core profile version: 4.2 (Core Profile) Mesa 25.0.7
+OpenGL core profile shading language version: 4.20
+OpenGL compatibility profile vendor: Intel
+OpenGL compatibility profile renderer: Mesa Intel(R) HD Graphics (BYT)
+OpenGL compatibility profile version: 4.2 (Compatibility Profile) Mesa 25.0.7
+OpenGL compatibility profile shading language version: 4.20
+OpenGL ES profile vendor: Intel
+OpenGL ES profile renderer: Mesa Intel(R) HD Graphics (BYT)
+OpenGL ES profile version: OpenGL ES 3.0 Mesa 25.0.7
+OpenGL ES profile shading language version: OpenGL ES GLSL ES 3.00
+
+Wayland platform:
+EGL API version: 1.5
+EGL vendor string: Mesa Project
+EGL version string: 1.5
+EGL client APIs: OpenGL OpenGL_ES
+OpenGL core profile vendor: Mesa
+OpenGL core profile renderer: llvmpipe (LLVM 19.1.7, 128 bits)
+OpenGL core profile version: 4.5 (Core Profile) Mesa 25.0.7
+OpenGL core profile shading language version: 4.50
+OpenGL compatibility profile vendor: Mesa
+OpenGL compatibility profile renderer: llvmpipe (LLVM 19.1.7, 128 bits)
+OpenGL compatibility profile version: 4.5 (Compatibility Profile) Mesa 25.0.7
+OpenGL compatibility profile shading language version: 4.50
+OpenGL ES profile vendor: Mesa
+OpenGL ES profile renderer: llvmpipe (LLVM 19.1.7, 128 bits)
+OpenGL ES profile version: OpenGL ES 3.2 Mesa 25.0.7
+OpenGL ES profile shading language version: OpenGL ES GLSL ES 3.20
+
+X11 platform:
+eglinfo: eglInitialize failed
+
+Surfaceless platform:
+EGL API version: 1.5
+EGL vendor string: Mesa Project
+EGL version string: 1.5
+EGL client APIs: OpenGL OpenGL_ES
+OpenGL core profile vendor: Intel
+OpenGL core profile renderer: Mesa Intel(R) HD Graphics (BYT)
+OpenGL core profile version: 4.2 (Core Profile) Mesa 25.0.7
+OpenGL core profile shading language version: 4.20
+OpenGL compatibility profile vendor: Intel
+OpenGL compatibility profile renderer: Mesa Intel(R) HD Graphics (BYT)
+OpenGL compatibility profile version: 4.2 (Compatibility Profile) Mesa 25.0.7
+OpenGL compatibility profile shading language version: 4.20
+OpenGL ES profile vendor: Intel
+OpenGL ES profile renderer: Mesa Intel(R) HD Graphics (BYT)
+OpenGL ES profile version: OpenGL ES 3.0 Mesa 25.0.7
+OpenGL ES profile shading language version: OpenGL ES GLSL ES 3.00
+
+Device platform:
+Device #0:
+
+Platform Device platform:
+EGL API version: 1.5
+EGL vendor string: Mesa Project
+EGL version string: 1.5
+EGL client APIs: OpenGL OpenGL_ES
+OpenGL core profile vendor: Intel
+OpenGL core profile renderer: Mesa Intel(R) HD Graphics (BYT)
+OpenGL core profile version: 4.2 (Core Profile) Mesa 25.0.7
+OpenGL core profile shading language version: 4.20
+OpenGL compatibility profile vendor: Intel
+OpenGL compatibility profile renderer: Mesa Intel(R) HD Graphics (BYT)
+OpenGL compatibility profile version: 4.2 (Compatibility Profile) Mesa 25.0.7
+OpenGL compatibility profile shading language version: 4.20
+OpenGL ES profile vendor: Intel
+OpenGL ES profile renderer: Mesa Intel(R) HD Graphics (BYT)
+OpenGL ES profile version: OpenGL ES 3.0 Mesa 25.0.7
+OpenGL ES profile shading language version: OpenGL ES GLSL ES 3.00
+
+Device #1:
+
+Platform Device platform:
+EGL API version: 1.5
+EGL vendor string: Mesa Project
+EGL version string: 1.5
+EGL client APIs: OpenGL OpenGL_ES
+OpenGL core profile vendor: Mesa
+OpenGL core profile renderer: llvmpipe (LLVM 19.1.7, 128 bits)
+OpenGL core profile version: 4.5 (Core Profile) Mesa 25.0.7
+OpenGL core profile shading language version: 4.50
+OpenGL compatibility profile vendor: Mesa
+OpenGL compatibility profile renderer: llvmpipe (LLVM 19.1.7, 128 bits)
+OpenGL compatibility profile version: 4.5 (Compatibility Profile) Mesa 25.0.7
+OpenGL compatibility profile shading language version: 4.50
+OpenGL ES profile vendor: Mesa
+OpenGL ES profile renderer: llvmpipe (LLVM 19.1.7, 128 bits)
+OpenGL ES profile version: OpenGL ES 3.2 Mesa 25.0.7
+OpenGL ES profile shading language version: OpenGL ES GLSL ES 3.20
+
+## Surfaceless EGL_PLATFORM=surfaceless
+GBM platform:
+EGL API version: 1.5
+EGL vendor string: Mesa Project
+EGL version string: 1.5
+EGL client APIs: OpenGL OpenGL_ES
+OpenGL core profile vendor: Intel
+OpenGL core profile renderer: Mesa Intel(R) HD Graphics (BYT)
+OpenGL core profile version: 4.2 (Core Profile) Mesa 25.0.7
+OpenGL core profile shading language version: 4.20
+OpenGL compatibility profile vendor: Intel
+OpenGL compatibility profile renderer: Mesa Intel(R) HD Graphics (BYT)
+OpenGL compatibility profile version: 4.2 (Compatibility Profile) Mesa 25.0.7
+OpenGL compatibility profile shading language version: 4.20
+OpenGL ES profile vendor: Intel
+OpenGL ES profile renderer: Mesa Intel(R) HD Graphics (BYT)
+OpenGL ES profile version: OpenGL ES 3.0 Mesa 25.0.7
+OpenGL ES profile shading language version: OpenGL ES GLSL ES 3.00
+
+Wayland platform:
+eglinfo: eglInitialize failed
+
+X11 platform:
+eglinfo: eglInitialize failed
+
+Surfaceless platform:
+EGL API version: 1.5
+EGL vendor string: Mesa Project
+EGL version string: 1.5
+EGL client APIs: OpenGL OpenGL_ES
+OpenGL core profile vendor: Intel
+OpenGL core profile renderer: Mesa Intel(R) HD Graphics (BYT)
+OpenGL core profile version: 4.2 (Core Profile) Mesa 25.0.7
+OpenGL core profile shading language version: 4.20
+OpenGL compatibility profile vendor: Intel
+OpenGL compatibility profile renderer: Mesa Intel(R) HD Graphics (BYT)
+OpenGL compatibility profile version: 4.2 (Compatibility Profile) Mesa 25.0.7
+OpenGL compatibility profile shading language version: 4.20
+OpenGL ES profile vendor: Intel
+OpenGL ES profile renderer: Mesa Intel(R) HD Graphics (BYT)
+OpenGL ES profile version: OpenGL ES 3.0 Mesa 25.0.7
+OpenGL ES profile shading language version: OpenGL ES GLSL ES 3.00
+
+Device platform:
+Device #0:
+
+Platform Device platform:
+EGL API version: 1.5
+EGL vendor string: Mesa Project
+EGL version string: 1.5
+EGL client APIs: OpenGL OpenGL_ES
+OpenGL core profile vendor: Intel
+OpenGL core profile renderer: Mesa Intel(R) HD Graphics (BYT)
+OpenGL core profile version: 4.2 (Core Profile) Mesa 25.0.7
+OpenGL core profile shading language version: 4.20
+OpenGL compatibility profile vendor: Intel
+OpenGL compatibility profile renderer: Mesa Intel(R) HD Graphics (BYT)
+OpenGL compatibility profile version: 4.2 (Compatibility Profile) Mesa 25.0.7
+OpenGL compatibility profile shading language version: 4.20
+OpenGL ES profile vendor: Intel
+OpenGL ES profile renderer: Mesa Intel(R) HD Graphics (BYT)
+OpenGL ES profile version: OpenGL ES 3.0 Mesa 25.0.7
+OpenGL ES profile shading language version: OpenGL ES GLSL ES 3.00
+
+Device #1:
+
+Platform Device platform:
+EGL API version: 1.5
+EGL vendor string: Mesa Project
+EGL version string: 1.5
+EGL client APIs: OpenGL OpenGL_ES
+OpenGL core profile vendor: Mesa
+OpenGL core profile renderer: llvmpipe (LLVM 19.1.7, 128 bits)
+OpenGL core profile version: 4.5 (Core Profile) Mesa 25.0.7
+OpenGL core profile shading language version: 4.50
+OpenGL compatibility profile vendor: Mesa
+OpenGL compatibility profile renderer: llvmpipe (LLVM 19.1.7, 128 bits)
+OpenGL compatibility profile version: 4.5 (Compatibility Profile) Mesa 25.0.7
+OpenGL compatibility profile shading language version: 4.50
+OpenGL ES profile vendor: Mesa
+OpenGL ES profile renderer: llvmpipe (LLVM 19.1.7, 128 bits)
+OpenGL ES profile version: OpenGL ES 3.2 Mesa 25.0.7
+OpenGL ES profile shading language version: OpenGL ES GLSL ES 3.20
+
+## Flick still running
+active
