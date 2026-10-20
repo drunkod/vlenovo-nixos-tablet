@@ -46,3 +46,11 @@ A second read-only 10-second measurement collected exactly the newly appended lo
 At **5.7 frames/s**, the two explicit full-frame `pixels.clone()` and `buffer.copy_from_slice(...)` operations *would* together write around **105 MB/s** (57 × 2 × 9,216,000 bytes ÷ 10 s), ignoring allocations, Slint rasterization and GPU uploads. This is a **source-based traffic estimate**, not memory-bandwidth instrumentation or a measured speed-up. Full dataset: `mvp/native/benchmarks/2026-10-21-flick-qml-idle-render-counts.txt`.
 
 The evidence also shows 5.7 newly constructed output damage trackers per second, even though a dedicated one is retained per surface. Reusing a damage tracker requires a **separate** careful correctness investigation of buffer ages, output transitions, keyboard overlays and damage propagation; do not mix it into the current QML render-skip candidate.
+
+## Performance attribution after compilation
+
+The logging-only candidate downgrades the per-render `Slint render result` messages from INFO to DEBUG. Therefore **after activation, absence of that text from an INFO-level logfile is not proof that Slint rendering was skipped**. Avoid the incorrect comparison of old INFO render counts to new INFO render counts.
+
+For a future physical-access A/B test, run the unchanged compositor, then the logging-only build, then the experimental QML guard build under the **same** output mode, idle lock-screen view and sampling window. Capture CPU jiffies, proportional memory, frame delivery, log bytes/s and a short user touch/keyboard verification for each. Keep log filtering at the same ordinary INFO level for CPU comparisons; optionally enable DEBUG briefly *outside* the performance sampling window to inspect Slint callbacks. The expected CPU delta between the two new builds isolates the guard better than comparing either to the original noisy compositor. Measure several alternated windows and ensure QML windows are present; otherwise the guard does not apply.
+
+A permanent aggregated telemetry counter (instead of per-frame logging) can be evaluated separately if exact post-patch render counts are needed. The present patch is a rendering-logic change, not a complete damage-tracking optimisation or hardware driver replacement.
