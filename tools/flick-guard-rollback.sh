@@ -1,8 +1,10 @@
-#!/usr/bin/env bash
+#!/run/current-system/sw/bin/bash
 # SYSTEMD GUARD RECOVERY: root-only script. Do not run except from an explicitly
 # armed timer or during an approved emergency. It NEVER switches Nix generations.
 set -euo pipefail
 umask 077
+# A transient systemd timer may not inherit an interactive shell PATH.
+export PATH=/run/current-system/sw/bin:/usr/bin:/bin
 OVERRIDE=/run/systemd/system/flick.service.d/90-vlenovo-gpu-trial.conf
 ORIGINAL=/etc/systemd/system/flick.service
 UNIT=flick.service

@@ -31,7 +31,13 @@ with tempfile.TemporaryDirectory(prefix="flick-rollback-mock-") as tmp:
     assert "UNIT=flick.service" in source
     guard = "if (( EUID != 0 )); then\n    echo 'Rollback requires system/root privileges' >&2\n    exit 77\nfi"
     assert guard in source
-    tested = source.replace(
+    # Preserve the mock systemctl on the harness PATH; the production script
+    # intentionally uses the tablet's NixOS PATH instead of a caller's PATH.
+    source_for_mock = source.replace(
+        "export PATH=/run/current-system/sw/bin:/usr/bin:/bin",
+        'export PATH="$PATH"',
+    )
+    tested = source_for_mock.replace(
         "OVERRIDE=/run/systemd/system/flick.service.d/90-vlenovo-gpu-trial.conf",
         f"OVERRIDE={override}",
     ).replace(
