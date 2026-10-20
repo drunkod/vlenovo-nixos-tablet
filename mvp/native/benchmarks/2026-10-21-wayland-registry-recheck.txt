@@ -1,0 +1,32 @@
+interface: 'wl_compositor',                              version:  5, name:  1
+interface: 'wl_subcompositor',                           version:  1, name:  2
+interface: 'xdg_wm_base',                                version:  6, name:  3
+interface: 'wl_shm',                                     version:  2, name:  4
+	formats (fourcc):
+	         1 = 'XR24'
+	         0 = 'AR24'
+interface: 'zxdg_output_manager_v1',                     version:  3, name:  5
+	xdg_output_v1
+		output: 10
+		name: 'DSI-1'
+		description: 'Flick - DSI - DSI-1'
+		logical_x: 0, logical_y: 0
+		logical_width: 1920, logical_height: 1200
+interface: 'wl_data_device_manager',                     version:  3, name:  6
+interface: 'zwp_text_input_manager_v3',                  version:  1, name:  7
+interface: 'android_wlegl',                              version:  2, name:  8
+interface: 'wl_seat',                                    version:  9, name:  9
+	name: seat0
+	capabilities: pointer keyboard touch
+	keyboard repeat rate: 25
+	keyboard repeat delay: 200
+interface: 'wl_output',                                  version:  4, name: 10
+	name: DSI-1
+	description: Flick - DSI - DSI-1
+	x: 0, y: 0, scale: 1,
+	physical_width: 216 mm, physical_height: 135 mm,
+	make: 'Flick', model: 'DSI',
+	subpixel_orientation: unknown, output_transform: normal,
+	mode:
+		width: 1920 px, height: 1200 px, refresh: 60.000 Hz,
+		flags: current preferred
