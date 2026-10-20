@@ -30,5 +30,14 @@
             ./patches/flick/0008-skip-qml-obscured-slint-render.patch
           ];
         });
+
+      # Third independent candidate: logging fix + verified native DMA-BUF
+      # advertising/import, WITHOUT the QML full-screen raster skip.
+      packages.x86_64-linux.flick-dmabuf-experimental =
+        flickPackages.unwrapped.overrideAttrs (old: {
+          patches = old.patches ++ [
+            ./patches/flick/0009-native-drm-validated-dmabuf.patch
+          ];
+        });
     };
 }

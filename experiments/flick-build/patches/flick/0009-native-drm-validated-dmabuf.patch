@@ -1,0 +1,143 @@
+diff --git a/shell/src/backend/udev.rs b/shell/src/backend/udev.rs
+--- a/shell/src/backend/udev.rs
++++ b/shell/src/backend/udev.rs
+@@ -55,11 +55,11 @@
+ use smithay::wayland::xwayland_shell::XWaylandShellState;
+ use smithay::xwayland::{XWayland, XWaylandEvent, xwm::X11Wm};
+ use smithay::backend::renderer::element::solid::SolidColorRenderElement;
+ use smithay::backend::renderer::element::surface::WaylandSurfaceRenderElement;
+ use smithay::backend::renderer::element::memory::{MemoryRenderBuffer, MemoryRenderBufferRenderElement};
+-use smithay::backend::renderer::{ImportAll, ImportMem};
++use smithay::backend::renderer::{ImportAll, ImportMem, ImportDma};
+ use smithay::wayland::seat::WaylandFocus;
+ 
+ use crate::state::Flick;
+ 
+ /// Simple 5x7 bitmap font for window titles
+@@ -494,10 +494,26 @@
+         }
+ 
+         // Dispatch client requests and flush responses
+         state.dispatch_clients();
+ 
++        // Smithay import callbacks cannot access the GlesRenderer: it is
++        // owned by this native DRM loop. Validate imports here before telling
++        // the client that the supplied wl_buffer is supported. Never claim
++        // successful import for an unsupported modifier or EGL format.
++        for (dmabuf, notifier) in std::mem::take(&mut state.pending_dmabuf_imports) {
++            match gpu.renderer.import_dmabuf(&dmabuf, None) {
++                Ok(_texture) => {
++                    let _ = notifier.successful::<Flick>();
++                }
++                Err(e) => {
++                    warn!("Rejecting unsupported native DMA-BUF import: {:?}", e);
++                    notifier.failed();
++                }
++            }
++        }
++
+         // Check for power button hold (3+ seconds = emergency restart)
+         if let Some(pressed_at) = state.power_button_pressed_at {
+             let held_duration = pressed_at.elapsed();
+             let held_secs = held_duration.as_secs();
+ 
+@@ -689,10 +705,44 @@
+     // Create renderer
+     let renderer = unsafe { GlesRenderer::new(egl_context) }
+         .map_err(|e| anyhow::anyhow!("Failed to create GLES renderer: {:?}", e))?;
+ 
+     info!("GPU initialized successfully");
++
++    // Advertise only EGL-supported DMA-BUF formats to Wayland clients, using
++    // the render node associated with THIS DRM device (not the first /dev/dri
++    // entry). This is deliberately separate from the GBM scanout allocator.
++    if state.dmabuf_global.is_none() {
++        let render_node = smithay::backend::drm::DrmNode::from_file(&fd)
++            .ok()
++            .and_then(|node| node.node_with_type(smithay::backend::drm::NodeType::Render))
++            .and_then(|result| result.ok());
++        if let Some(render_node) = render_node {
++            let formats: Vec<_> = render_formats.iter().copied().collect();
++            if formats.is_empty() {
++                warn!("No EGL DMA-BUF formats; retaining wl_shm-only clients");
++            } else {
++                match smithay::wayland::dmabuf::DmabufFeedbackBuilder::new(
++                    render_node.dev_id(),
++                    formats,
++                ).build() {
++                    Ok(feedback) => {
++                        let global = state.dmabuf_state
++                            .create_global_with_default_feedback::<Flick>(
++                                &state.display_handle, &feedback,
++                            );
++                        state.dmabuf_global = Some(global);
++                        state.native_dmabuf_validation = true;
++                        info!("Registered native DRM Wayland DMA-BUF feedback");
++                    }
++                    Err(e) => warn!("DMA-BUF feedback unavailable: {:?}", e),
++                }
++            }
++        } else {
++            warn!("No matching DRM render node; retaining wl_shm-only clients");
++        }
++    }
+ 
+     // Find connected outputs and create surfaces
+     let res_handles = drm_device.resource_handles()
+         .map_err(|e| anyhow::anyhow!("Failed to get resource handles: {:?}", e))?;
+ 
+diff --git a/shell/src/state.rs b/shell/src/state.rs
+--- a/shell/src/state.rs
++++ b/shell/src/state.rs
+@@ -129,10 +129,14 @@
+     pub seat: Seat<Self>,
+     pub text_input_state: TextInputState,
+     pub android_wlegl_state: AndroidWleglState,
+     pub dmabuf_state: DmabufState,
+     pub dmabuf_global: Option<DmabufGlobal>,
++    /// Native DRM validates DMA-BUF imports after Wayland request dispatch.
++    /// HWC keeps its existing import callback until independently reviewed.
++    pub native_dmabuf_validation: bool,
++    pub pending_dmabuf_imports: Vec<(Dmabuf, ImportNotifier)>,
+ 
+     // Desktop
+     pub space: Space<Window>,
+     pub popup_manager: PopupManager,
+ 
+@@ -334,10 +338,12 @@
+             data_device_state,
+             text_input_state,
+             android_wlegl_state,
+             dmabuf_state,
+             dmabuf_global: None,
++            native_dmabuf_validation: false,
++            pending_dmabuf_imports: Vec::new(),
+             seat_state,
+             seat,
+             space: Space::default(),
+             popup_manager: PopupManager::default(),
+             outputs: Vec::new(),
+@@ -1803,13 +1809,20 @@
+             dmabuf.height(),
+             dmabuf.num_planes(),
+             dmabuf.format()
+         );
+ 
+-        // For now, accept all dmabuf imports - actual GPU import happens during rendering
+-        // The dmabuf data is stored in the wl_buffer and accessed when the surface is committed
+-        notifier.successful::<Flick>();
++        if self.native_dmabuf_validation {
++            // The native DRM renderer lives in backend/udev.rs, outside the
++            // Wayland event dispatch callback. Queue this without replying.
++            // The next loop iteration will import into the *actual* renderer
++            // and report success or failure through this notifier.
++            self.pending_dmabuf_imports.push((dmabuf, notifier));
++        } else {
++            // Preserve legacy HWC behavior; do not change this backend here.
++            let _ = notifier.successful::<Flick>();
++        }
+     }
+ }
+ 
+ // Delegate macros
+ delegate_compositor!(Flick);

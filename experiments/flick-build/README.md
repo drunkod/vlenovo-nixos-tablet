@@ -56,3 +56,11 @@ The experimental derivation evaluates and the actual Nix patch phase **successfu
 ### Repeatable non-destructive artifact check
 
 From the worktree root, `tools/verify-flick-built-candidate.sh logging` verifies the already-built logging-only Nix output path, ELF architecture, SHA-256 and `--help` smoke test. After the experimental build finishes, use `tools/verify-flick-built-candidate.sh qml` for an identical check. Either mode accepts the **explicit** `--stage` flag to copy its verified binary to the tablet's unprivileged `~/lenovo-mvp/builds/` directory, verify matching checksums, run `--help`, and confirm essential services remain up. The tool **never activates**, restarts or replaces Flick and **never changes** the tablet's NixOS generation.
+
+## Third independent experiment: native DRM DMA-BUF Wayland transport
+
+Attribute: \`packages.x86_64-linux.flick-dmabuf-experimental\`. This variant contains the existing six system patches, the seventh logging-only patch, and **0009-native-drm-validated-dmabuf.patch**; it deliberately excludes the QML Slint render-skip patch 0008. Thus the Qt GPU-client protocol change can be tested independently.
+
+The patch advertises only EGL-reported DMA-BUF formats from the exact DRM device render node, queues native Wayland import requests, validates each with \`GpuData.renderer.import_dmabuf(...)\`, then calls the corresponding Smithay success/failure notifier. If render node discovery or feedback creation fails, the existing \`wl_shm\` path remains. The HWC path is unchanged.
+
+**Status: source patch checks only. No Rust compiler or runtime test has passed yet. Do not deploy or restart Flick.** A clean compilation in the same pinned Mac/Linux builder is the next gate, followed by exact runtime closure/hash verification and a physical rollback plan. Wayland-EGL/Qt5 may still require \`wl_drm\` for acceleration; the patch is an isolated hypothesis, not a claim to have eliminated llvmpipe.
