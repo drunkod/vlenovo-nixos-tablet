@@ -22,7 +22,7 @@ echo "nixos_current=$current"
 touch="$(readlink -f /dev/input/by-path/first-touchscreen)"
 echo "touchscreen=$touch"
 [[ -c "$touch" ]] || { echo "BLOCK: no character touchscreen device" >&2; exit 1; }
-# Verify stable hashes of the exact three build artifacts. No chmod, copy, or restart.
+# Verify stable hashes of all five separately built artifacts. No chmod, copy, or restart.
 dir=/home/alex/lenovo-mvp/builds
 while read -r digest filename; do
     file="$dir/$filename"
@@ -37,9 +37,11 @@ done <<'HASHES'
 ad01f34e4576f0b8d6a8254835884758179df40923cb377564c0fc4c7dc2f7f6 flick-logging-x86_64
 34cf5fa26b25b88f749522a92692f9896c301d84ace73a92dec8bf96074a6e38 flick-qml-experimental-x86_64
 a049d7b41bcd9939831a94a54e764b437d3c879127ba52670a4d943848b12b2c flick-dmabuf-experimental-x86_64
+361d97fcda198e202540298a23455496cabbaaf70a825a58ae85747b11a72f04 flick-qt-egl-experimental-x86_64
+4c0d8a75d70f727092522cc82941f12d6421b1b0c44b26e0f7a1a4cbe054006d flick-qt-egl-qml-experimental-x86_64
 HASHES
 echo "free_disk=$(df -h / | tail -1)"
 echo "read_only_preflight=PASS"
 echo "physical_access_confirmed=NOT_VERIFIED"
 echo "automatic_rollback_tested=NO"
-echo "compositor_restart_authorized=NO"
+echo "live_activation_performed=NO"
