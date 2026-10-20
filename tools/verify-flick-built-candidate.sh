@@ -31,8 +31,12 @@ case "$variant" in
         attr="packages.x86_64-linux.flick-qt-egl-experimental"
         name="flick-qt-egl-experimental-x86_64"
         ;;
+    qt-egl-qml)
+        attr="packages.x86_64-linux.flick-qt-egl-qml-experimental"
+        name="flick-qt-egl-qml-experimental-x86_64"
+        ;;
     *)
-        echo "Usage: $0 {logging|qml|dmabuf|qt-egl} [--stage]" >&2
+        echo "Usage: $0 {logging|qml|dmabuf|qt-egl|qt-egl-qml} [--stage]" >&2
         exit 2
         ;;
 esac
@@ -60,7 +64,7 @@ if ! file "$local_bin" | grep -q 'ELF 64-bit.*x86-64'; then
 fi
 # Feature-specific compile signature: verify that the new EGL/WL DRM
 # registration code was linked, not just that a generic Flick --help works.
-if [[ "$variant" == "qt-egl" ]]; then
+if [[ "$variant" == "qt-egl" || "$variant" == "qt-egl-qml" ]]; then
     if ! /usr/bin/strings -a "$local_bin" | grep -F         'Registered wl_drm through renderer EGL Wayland binding' >/dev/null; then
         echo "Expected Qt EGL/wl_drm binding code not present in binary" >&2
         exit 1

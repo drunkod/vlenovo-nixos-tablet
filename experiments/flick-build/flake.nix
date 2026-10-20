@@ -49,5 +49,16 @@
             ./patches/flick/0010-enable-qt-wl-drm-egl-import.patch
           ];
         });
+
+      # Fifth isolated combination. All previous variants stay independent.
+      # Adds QML-obscured full-frame skip to validated DMA-BUF + wl_drm EGL.
+      packages.x86_64-linux.flick-qt-egl-qml-experimental =
+        flickPackages.unwrapped.overrideAttrs (old: {
+          patches = old.patches ++ [
+            ./patches/flick/0008-skip-qml-obscured-slint-render.patch
+            ./patches/flick/0009-native-drm-validated-dmabuf.patch
+            ./patches/flick/0010-enable-qt-wl-drm-egl-import.patch
+          ];
+        });
     };
 }
