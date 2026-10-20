@@ -1,0 +1,15 @@
+# Read-only idle QML lock-screen log-delta sample, 2026-10-20 UTC
+# Counted matched INFO entries in the 10-second newly appended log segment.
+# Measured before activating either optimisation candidate.
+sample_seconds=10
+new_log_bytes=69865
+slint_fullscreen_renders=57
+lock_render_calls=57
+fresh_tracker_allocations=57
+qml_branch_render_calls=57
+fresh_tracker_uses=57
+observed_fullscreen_slint_renders_per_second=5.7
+fullscreen_rgba_bytes_per_frame=9216000
+# Hypothetical minimum user-space write traffic for TWO explicit full-frame
+# copies (pixels.clone plus MemoryRenderBuffer::copy_from_slice), not measured:
+modeled_explicit_copy_writes_bytes_per_second=105062400

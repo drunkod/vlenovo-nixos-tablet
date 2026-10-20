@@ -38,3 +38,11 @@ The general `slint_ui.process_events()` call **still runs**, and the QML branch'
 A new standalone flake target `experiments/flick-build#flick-qml-experimental` was added without changing the proven `flick.unwrapped` logging-only output. It appends `experiments/flick-build/patches/flick/0008-skip-qml-obscured-slint-render.patch` to the six integration patches and seventh logging patch. The Nix derivation evaluated and the **actual Nix patchPhase applied all eight patches** before Cargo release compilation began.
 
 A fresh **read-only 10-second baseline** was captured at `2026-10-20T19:57:16Z`: Flick CPU **90.3% of one core**, log throughput **6,565.8 bytes/s**, RSS **130,076 KiB**. The active log specifically showed `render_surface: view=LockScreen`, `Slint render result: Some((1920, 1200))`, and an external QML lock-screen branch. Evidence: `mvp/native/benchmarks/2026-10-21-flick-pre-qml-opt.txt`. These are *pre-activation* measurements; they do not establish a patch improvement.
+
+## Log-derived render count (follow-up; 2026-10-20 UTC)
+
+A second read-only 10-second measurement collected exactly the newly appended log bytes from the existing Flick logfile. It counted **57** `Slint render result: Some((1920, 1200))` events, **57** `render_surface: view=LockScreen` events, **57** fresh damage-tracker creations, and **57** QML lock-screen branch executions. The segment contained 69,865 bytes of logs.
+
+At **5.7 frames/s**, the two explicit full-frame `pixels.clone()` and `buffer.copy_from_slice(...)` operations *would* together write around **105 MB/s** (57 × 2 × 9,216,000 bytes ÷ 10 s), ignoring allocations, Slint rasterization and GPU uploads. This is a **source-based traffic estimate**, not memory-bandwidth instrumentation or a measured speed-up. Full dataset: `mvp/native/benchmarks/2026-10-21-flick-qml-idle-render-counts.txt`.
+
+The evidence also shows 5.7 newly constructed output damage trackers per second, even though a dedicated one is retained per surface. Reusing a damage tracker requires a **separate** careful correctness investigation of buffer ages, output transitions, keyboard overlays and damage propagation; do not mix it into the current QML render-skip candidate.
