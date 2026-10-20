@@ -34,7 +34,9 @@ for mode in unbound bound; do
     echo "mode=$mode registry_interfaces"
     XDG_RUNTIME_DIR="$runtime" WAYLAND_DISPLAY=egl-private timeout 8 "$wl_info" 2>&1 | grep 'interface: ' || true
     echo "mode=$mode Wayland_EGL_renderer"
-    XDG_RUNTIME_DIR="$runtime" WAYLAND_DISPLAY=egl-private EGL_PLATFORM=wayland timeout 15 "$eglinfo" -B 2>&1 | sed -n '/^Wayland platform:/,/^X11 platform:/p' | head -28
+    # EGL init is EXPECTED to fail on an unbound control socket; do not abort.
+    # SIGPIPE from head is not itself a failure of the EGL transport test.
+    XDG_RUNTIME_DIR="$runtime" WAYLAND_DISPLAY=egl-private EGL_PLATFORM=wayland timeout 15 "$eglinfo" -B 2>&1 | sed -n '/^Wayland platform:/,/^X11 platform:/p' | head -28 || true
   fi
   wait "$pid" || true
   echo "mode=$mode server_log"

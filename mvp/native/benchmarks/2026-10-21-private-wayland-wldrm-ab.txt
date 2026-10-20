@@ -1,0 +1,45 @@
+mode=unbound server_pid=10175
+mode=unbound socket_ready=yes
+mode=unbound registry_interfaces
+mode=unbound Wayland_EGL_renderer
+Wayland platform:
+eglinfo: eglInitialize failed
+
+X11 platform:
+mode=unbound server_log
+EGL_VERSION=1.5
+BOUND_WL_DRM=False
+PRIVATE_SOCKET=/run/user/1001/private-wl-drm-probe-unbound-10173/egl-private
+PRIVATE_SERVER_EXIT=OK
+mode=bound server_pid=10213
+mode=bound socket_ready=yes
+mode=bound registry_interfaces
+interface: 'wl_drm',                                     version:  2, name:  1
+mode=bound Wayland_EGL_renderer
+Wayland platform:
+EGL API version: 1.5
+EGL vendor string: Mesa Project
+EGL version string: 1.5
+EGL client APIs: OpenGL OpenGL_ES
+OpenGL core profile vendor: Intel
+OpenGL core profile renderer: Mesa Intel(R) HD Graphics (BYT)
+OpenGL core profile version: 4.2 (Core Profile) Mesa 25.0.7
+OpenGL core profile shading language version: 4.20
+OpenGL compatibility profile vendor: Intel
+OpenGL compatibility profile renderer: Mesa Intel(R) HD Graphics (BYT)
+OpenGL compatibility profile version: 4.2 (Compatibility Profile) Mesa 25.0.7
+OpenGL compatibility profile shading language version: 4.20
+OpenGL ES profile vendor: Intel
+OpenGL ES profile renderer: Mesa Intel(R) HD Graphics (BYT)
+OpenGL ES profile version: OpenGL ES 3.0 Mesa 25.0.7
+OpenGL ES profile shading language version: OpenGL ES GLSL ES 3.00
+
+X11 platform:
+mode=bound server_log
+EGL_VERSION=1.5
+BOUND_WL_DRM=True
+PRIVATE_SOCKET=/run/user/1001/private-wl-drm-probe-bound-10173/egl-private
+PRIVATE_SERVER_EXIT=OK
+real_flick_main_pid=894
+real_flick_status=active
+PRIVATE_COMPARISON_COMPLETE=yes

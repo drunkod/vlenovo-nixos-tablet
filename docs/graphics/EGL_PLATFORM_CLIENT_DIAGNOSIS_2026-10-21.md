@@ -43,3 +43,10 @@ References:
 The source of tools/private-wl-drm-egl-probe.py and tools/run-private-egl-client-comparison.sh creates a short-lived, **non-root, private Wayland socket** under /run/user/1001, with an optional EGL_WL_bind_wayland_display registration from the Intel DRM render node. It creates no outputs, does not seize /dev/tty1, and never changes the existing Flick service. The control socket omits the bind; the treatment socket enables wl_drm. Comparing both using wayland-info and EGL_PLATFORM=wayland eglinfo is a direct causal test of protocol-based GPU discovery independent of QML. Do not execute during the uncontaminated 30-minute live baseline.
 
 **Pending:** private socket A/B outcome, fourth package compile and exact runtime-closure verification, supervised live compositor measurements. Runtime GPU acceleration cannot be claimed from these source and offline tests alone.
+
+
+## Private Wayland wl_drm experiment completed
+
+After the separate uninterrupted 30-minute CPU trace, the private user-owned GBM/EGL Wayland A/B comparison was run twice without touching Flick. The control server advertised no wl_drm and the Mesa Wayland EGL client could not initialize. The matched treatment server called eglBindWaylandDisplayWL, exposed wl_drm version 2 and successfully initialized Mesa Wayland EGL clients using **Intel HD Graphics (BYT)** for OpenGL and OpenGL ES, not llvmpipe.
+
+This confirms the server-side EGL Wayland bind solves the GPU-client renderer selection on a minimal independent socket. It does NOT yet test the fourth candidate as the production compositor, and the unbound minimal control's initialization failure is not the same phenomenon as the original Flick socket's software rendering. Raw repeatable result: mvp/native/benchmarks/2026-10-21-private-wayland-wldrm-ab.txt. Detailed procedure and limitations: FLICK_PRIVATE_WAYLAND_EGL_AB_RESULT_2026-10-21.md.
