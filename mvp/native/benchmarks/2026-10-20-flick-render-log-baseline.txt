@@ -1,0 +1,17 @@
+sample_utc=2026-10-20T18:10:05Z
+sample_seconds=5
+flick_pid=894
+flick_log=/home/alex/.local/state/flick/compositor.log.2026-10-20
+log_bytes_start=63901872
+log_bytes_end=63937910
+log_bytes_delta=36038
+log_bytes_per_second=7207.6
+flick_cpu_percent_one_core=89.2
+    PID   RSS %CPU     ELAPSED COMMAND
+    894 143368 89.0   01:20:10 .flick-wrapped
+recent_render_log_lines:
+2026-10-20T18:10:10.036849Z  INFO flick::backend::udev: Using fresh damage tracker for LockScreen with Python app (keyboard_visible=false)
+2026-10-20T18:10:10.115438Z  INFO flick::state: Surface ObjectId(wl_surface@23) committed SHM buffer
+2026-10-20T18:10:10.116032Z  INFO flick::backend::udev: render_surface: view=LockScreen, gesture_active=false, qs_gesture_active=false, qs_progress=0.00, bg_color=[0.05,
+2026-10-20T18:10:10.171198Z  INFO flick::backend::udev: Slint render result: Some((1920, 1200))
+2026-10-20T18:10:10.171251Z  INFO flick::backend::udev: UDEV: LockScreen Slint center pixel RGBA=(10, 10, 15, 255)
