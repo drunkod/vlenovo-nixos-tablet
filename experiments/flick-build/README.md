@@ -33,3 +33,7 @@ Downgrades 30 high-frequency render-function INFO messages to DEBUG, preserving 
 This is the first low-risk CPU optimisation candidate, not the large redraw/cache refactor. For any future touch-visible test, check the candidate's exact derivation and binary hash, preserve existing SSH and boot generation, arrange local recovery, and obtain approval before intentionally restarting Flick. A compositor restart interrupts the active tablet session; merely building in Nix store does not.
 
 See `../../docs/graphics/FLICK_RENDER_LOGGING_EXPERIMENT.md` and `../../mvp/native/benchmarks/2026-10-20-flick-render-log-baseline.txt`.
+
+## Confirmed binary build
+
+The Mac-hosted Rosetta x86_64 Linux build **completed successfully** on 2026-10-21 with the logging-only seventh patch. Nix result: `/nix/store/3j68fnhw24dz4vnxhijhngq7923nn4lw-flick-unstable-2026-01-04`, validated tablet-staged binary SHA-256 `ad01f34e4576f0b8d6a8254835884758179df40923cb377564c0fc4c7dc2f7f6`. For the first build, a 3 GiB swap file was temporarily required inside the VM during final Rust code generation. The unactivated and still-unmeasured result, execution details and future rollback requirements are documented in `../../docs/graphics/FLICK_MAC_BUILD_RESULT_2026-10-21.md`.

@@ -62,3 +62,7 @@ docker --context colima-vlenovo-flick-build exec vlenovo-flick-nixbuild \
 To stop the VM when no build is running, use `colima stop -p vlenovo-flick-build`. Stopping the VM pauses/disconnects container execution; do not stop it while a build is still in progress.
 
 The original tablet system and native touchscreen dashboard remain running. The performance target is unchanged: reduce per-render INFO log overhead first, then profile full-screen Slint pixel-buffer redraws before implementing a damage-aware compositor change.
+
+## Final build result — 2026-10-21
+
+**Successful third build:** after adding the container-only `filter-syscalls=false` option and changing the logging patch to 30 context-free hunks, Nix exit status was **0**. Cargo compiled the `x86_64-unknown-linux-gnu` release in **22 minutes 51 seconds**. The validated Nix result is `/nix/store/3j68fnhw24dz4vnxhijhngq7923nn4lw-flick-unstable-2026-01-04`, and the staged binary's SHA-256 is `ad01f34e4576f0b8d6a8254835884758179df40923cb377564c0fc4c7dc2f7f6`. Its direct runtime store references matched the tablet's original Flick package. The staged executable passed `--help` on the tablet, but **Flick was not restarted**. See `FLICK_MAC_BUILD_RESULT_2026-10-21.md` for the full manifest and acceptance gates.
