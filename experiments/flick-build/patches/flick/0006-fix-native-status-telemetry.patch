@@ -1,0 +1,241 @@
+diff --git a/shell/src/backend/hwcomposer.rs b/shell/src/backend/hwcomposer.rs
+index 07c1bcd..1e99aa9 100644
+--- a/shell/src/backend/hwcomposer.rs
++++ b/shell/src/backend/hwcomposer.rs
+@@ -3554,11 +3554,8 @@ fn render_frame(
+                                     // (can't mutate here since render_frame takes immutable state)
+                                 }
+ 
+-                                // Update time for status bar
+-                                let now = chrono::Local::now();
+-                                slint_ui.set_time(&now.format("%H:%M").to_string());
+-                                // Update battery from system info
+-                                slint_ui.set_battery_percent(state.shell.quick_settings.battery_percent as i32);
++                                // Keep status-bar telemetry backend-independent.
++                                slint_ui.refresh_system_telemetry(&state.system);
+                                 // Update text scale from settings
+                                 slint_ui.set_text_scale(state.shell.text_scale);
+                             }
+diff --git a/shell/src/backend/udev.rs b/shell/src/backend/udev.rs
+index 0544809..bdbd308 100644
+--- a/shell/src/backend/udev.rs
++++ b/shell/src/backend/udev.rs
+@@ -608,6 +608,20 @@ pub fn run() -> Result<()> {
+             *needs_buffer_reset.borrow_mut() = false;
+         }
+ 
++        // Periodic system refresh (battery, wifi, etc.) - every 10 seconds.
++        // Match the hardware-composer backend so telemetry is backend-independent.
++        if state.system_last_refresh.elapsed().as_secs() >= 10 {
++            state.system.refresh();
++            state.shell.sync_quick_settings(&state.system);
++            state.shell.reload_text_scale();
++            state.system_last_refresh = std::time::Instant::now();
++
++            info!(
++                "[flick-status] refreshed system telemetry battery={:?}",
++                state.system.battery.as_ref().map(|battery| battery.capacity)
++            );
++        }
++
+         // Reload settings periodically (allows Settings app to change settings without restart)
+         state.reload_settings_if_needed();
+ 
+@@ -943,6 +957,7 @@ fn render_surface(
+                 ShellView::Home => {
+                     info!("RENDER: ShellView::Home - setting up home view in Slint");
+                     slint_ui.set_view("home");
++                    slint_ui.refresh_system_telemetry(&state.system);
+                     // Update categories with real icons
+                     let slint_categories = state.shell.get_categories_with_icons();
+                     info!("RENDER: Home view has {} categories", slint_categories.len());
+diff --git a/shell/src/shell/slint_ui.rs b/shell/src/shell/slint_ui.rs
+index 49b3918..e322530 100644
+--- a/shell/src/shell/slint_ui.rs
++++ b/shell/src/shell/slint_ui.rs
+@@ -510,6 +510,16 @@ impl SlintShell {
+         self.shell.set_battery_percent(percent);
+     }
+ 
++    /// Refresh status-bar telemetry from the backend-independent system state.
++    pub fn refresh_system_telemetry(&self, system: &crate::system::SystemStatus) {
++        let now = chrono::Local::now();
++        self.set_time(&now.format("%H:%M").to_string());
++
++        if let Some(ref battery) = system.battery {
++            self.set_battery_percent(battery.capacity as i32);
++        }
++    }
++
+     /// Set text scale factor for UI elements
+     pub fn set_text_scale(&self, scale: f32) {
+         self.shell.set_text_scale(scale);
+diff --git a/shell/src/system.rs b/shell/src/system.rs
+index 1fb9cfe..180524a 100644
+--- a/shell/src/system.rs
++++ b/shell/src/system.rs
+@@ -7,6 +7,7 @@
+ //! - Process stats (CPU, RAM, IO)
+ 
+ use std::fs;
++use std::path::{Path, PathBuf};
+ use std::process::Command;
+ use std::collections::HashMap;
+ use std::time::Instant;
+@@ -145,6 +146,38 @@ impl Vibrator {
+     }
+ }
+ 
++fn read_trimmed(path: impl AsRef<Path>) -> Option<String> {
++    fs::read_to_string(path)
++        .ok()
++        .map(|s| s.trim().to_string())
++}
++
++fn find_battery_path_in(base: &Path) -> Option<PathBuf> {
++    let mut batteries = fs::read_dir(base)
++        .ok()?
++        .filter_map(Result::ok)
++        .map(|entry| entry.path())
++        .filter(|path| {
++            read_trimmed(path.join("type"))
++                .map(|value| value.eq_ignore_ascii_case("Battery"))
++                .unwrap_or(false)
++        })
++        .filter(|path| {
++            read_trimmed(path.join("present"))
++                .map(|value| value != "0")
++                .unwrap_or(true)
++        })
++        .filter(|path| path.join("capacity").is_file())
++        .collect::<Vec<_>>();
++
++    batteries.sort();
++    batteries.into_iter().next()
++}
++
++fn find_battery_path() -> Option<PathBuf> {
++    find_battery_path_in(Path::new("/sys/class/power_supply"))
++}
++
+ /// Battery status
+ #[derive(Debug, Clone)]
+ pub struct BatteryStatus {
+@@ -154,32 +187,94 @@ pub struct BatteryStatus {
+ }
+ 
+ impl BatteryStatus {
+-    /// Read current battery status
++    /// Read current battery status from the Linux power-supply class.
+     pub fn read() -> Option<Self> {
+-        // Try common battery paths (Android uses "battery", Linux uses "BAT0"/"BAT1")
+-        let battery_paths = [
+-            "/sys/class/power_supply/battery",
+-            "/sys/class/power_supply/Battery",
+-            "/sys/class/power_supply/BAT0",
+-            "/sys/class/power_supply/BAT1",
+-        ];
++        let path = find_battery_path()?;
++        let capacity = read_trimmed(path.join("capacity"))?
++            .parse::<u8>()
++            .ok()?;
++        let status = read_trimmed(path.join("status"))
++            .unwrap_or_else(|| "Unknown".to_string());
++        let charging = status == "Charging" || status == "Full";
++
++        tracing::info!(
++            "[flick-status] battery path={} capacity={} status={}",
++            path.display(),
++            capacity,
++            status
++        );
++
++        Some(Self { capacity, charging, status })
++    }
++}
+ 
+-        for battery_path in &battery_paths {
+-            let path = std::path::Path::new(battery_path);
+-            if path.exists() {
+-                let capacity = fs::read_to_string(path.join("capacity"))
+-                    .ok()
+-                    .and_then(|s| s.trim().parse().ok())
+-                    .unwrap_or(0);
+-                let status = fs::read_to_string(path.join("status"))
+-                    .map(|s| s.trim().to_string())
+-                    .unwrap_or_else(|_| "Unknown".to_string());
+-                let charging = status == "Charging" || status == "Full";
+-
+-                return Some(Self { capacity, charging, status });
+-            }
++#[cfg(test)]
++mod battery_tests {
++    use super::{find_battery_path_in, Path};
++    use std::fs;
++
++    fn temp_power_supply_root(name: &str) -> std::path::PathBuf {
++        let unique = std::time::SystemTime::now()
++            .duration_since(std::time::UNIX_EPOCH)
++            .unwrap()
++            .as_nanos();
++        let path = std::env::temp_dir().join(format!(
++            "flick-battery-test-{}-{}-{}",
++            std::process::id(),
++            name,
++            unique
++        ));
++        fs::create_dir_all(&path).unwrap();
++        path
++    }
++
++    fn add_supply(base: &Path, name: &str, kind: &str, present: Option<&str>, capacity: Option<&str>) {
++        let path = base.join(name);
++        fs::create_dir_all(&path).unwrap();
++        fs::write(path.join("type"), kind).unwrap();
++        if let Some(value) = present {
++            fs::write(path.join("present"), value).unwrap();
+         }
+-        None
++        if let Some(value) = capacity {
++            fs::write(path.join("capacity"), value).unwrap();
++        }
++    }
++
++    #[test]
++    fn discovers_nonstandard_battery_name_and_ignores_mains() {
++        let base = temp_power_supply_root("batc");
++        add_supply(&base, "ADP1", "Mains", None, None);
++        add_supply(&base, "BATC", "Battery", Some("1"), Some("100"));
++
++        let selected = find_battery_path_in(&base).unwrap();
++        assert_eq!(selected.file_name().unwrap(), "BATC");
++
++        fs::remove_dir_all(base).unwrap();
++    }
++
++    #[test]
++    fn ignores_absent_or_capacityless_batteries() {
++        let base = temp_power_supply_root("filters");
++        add_supply(&base, "BAT0", "Battery", Some("0"), Some("50"));
++        add_supply(&base, "BAT1", "Battery", Some("1"), None);
++        add_supply(&base, "BATC", "Battery", Some("1"), Some("90"));
++
++        let selected = find_battery_path_in(&base).unwrap();
++        assert_eq!(selected.file_name().unwrap(), "BATC");
++
++        fs::remove_dir_all(base).unwrap();
++    }
++
++    #[test]
++    fn selects_multiple_batteries_deterministically() {
++        let base = temp_power_supply_root("multiple");
++        add_supply(&base, "BATC", "Battery", Some("1"), Some("90"));
++        add_supply(&base, "BAT0", "Battery", Some("1"), Some("80"));
++
++        let selected = find_battery_path_in(&base).unwrap();
++        assert_eq!(selected.file_name().unwrap(), "BAT0");
++
++        fs::remove_dir_all(base).unwrap();
+     }
+ }
+ 

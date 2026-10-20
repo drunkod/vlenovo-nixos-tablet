@@ -1,0 +1,250 @@
+diff --git a/shell/src/backend/udev.rs b/shell/src/backend/udev.rs
+--- a/shell/src/backend/udev.rs
++++ b/shell/src/backend/udev.rs
+@@ -884,7 +884,7 @@
+         [0.05, 0.05, 0.15, 1.0]
+     };
+ 
+-    tracing::info!("render_surface: view={:?}, gesture_active={}, qs_gesture_active={}, qs_progress={:.2}, bg_color={:?}",
++    tracing::debug!("render_surface: view={:?}, gesture_active={}, qs_gesture_active={}, qs_progress={:.2}, bg_color={:?}",
+                    shell_view, gesture_active, state.qs_gesture_active, state.qs_gesture_progress, bg_color);
+ 
+     // Render touch effects to buffers (if enabled and any active effects)
+@@ -947,11 +947,11 @@
+                     // QML lock screen app handles all UI
+                 }
+                 ShellView::Home => {
+-                    info!("RENDER: ShellView::Home - setting up home view in Slint");
++                    debug!("RENDER: ShellView::Home - setting up home view in Slint");
+                     slint_ui.set_view("home");
+                     // Update categories with real icons
+                     let slint_categories = state.shell.get_categories_with_icons();
+-                    info!("RENDER: Home view has {} categories", slint_categories.len());
++                    debug!("RENDER: Home view has {} categories", slint_categories.len());
+                     slint_ui.set_categories(slint_categories);
+ 
+                     // Sync popup state
+@@ -1004,7 +1004,7 @@
+                         slint_ui.set_show_popup(false);
+                         slint_ui.set_wiggle_mode(false);
+                     } else {
+-                        tracing::info!("Rendering QuickSettings view via Slint");
++                        tracing::debug!("Rendering QuickSettings view via Slint");
+                         slint_ui.set_view("quick-settings");
+                         slint_ui.set_brightness(state.shell.quick_settings.brightness);
+                         slint_ui.set_volume(state.system.volume as i32);
+@@ -1031,7 +1031,7 @@
+                         slint_ui.set_show_popup(false);
+                         slint_ui.set_wiggle_mode(false);
+                     } else {
+-                        tracing::info!("Rendering Switcher view via Slint");
++                        tracing::debug!("Rendering Switcher view via Slint");
+                         slint_ui.set_view("switcher");
+                         slint_ui.set_switcher_scroll(state.shell.switcher_scroll as f32);
+ 
+@@ -1085,13 +1085,13 @@
+             // Render Slint UI to pixel buffer
+             slint_ui.request_redraw();
+             let render_result = slint_ui.render();
+-            tracing::info!("Slint render result: {:?}", render_result.as_ref().map(|(w, h, _)| (*w, *h)));
++            tracing::debug!("Slint render result: {:?}", render_result.as_ref().map(|(w, h, _)| (*w, *h)));
+             if let Some((width, height, pixels)) = render_result {
+                 // DEBUG: Sample center pixel from Slint output
+                 let center_offset = (width * height * 2) as usize; // middle of RGBA buffer
+                 if pixels.len() > center_offset + 4 {
+                     let sample = (pixels[center_offset], pixels[center_offset+1], pixels[center_offset+2], pixels[center_offset+3]);
+-                    tracing::info!("UDEV: {:?} Slint center pixel RGBA={:?}", shell_view, sample);
++                    tracing::debug!("UDEV: {:?} Slint center pixel RGBA={:?}", shell_view, sample);
+                 }
+ 
+                 // Create MemoryRenderBuffer from Slint's pixel output
+@@ -1128,10 +1128,10 @@
+                         // For other views (or Switcher during home gesture), add to slint_elements as normal
+                         if shell_view == ShellView::Switcher && !switcher_home_gesture_active {
+                             switcher_slint_element = Some(slint_element);
+-                            tracing::info!("Slint {:?} element saved for switcher_elements", shell_view);
++                            tracing::debug!("Slint {:?} element saved for switcher_elements", shell_view);
+                         } else {
+                             slint_elements.push(HomeRenderElement::Icon(slint_element));
+-                            tracing::info!("Slint {:?} element created and pushed", shell_view);
++                            tracing::debug!("Slint {:?} element created and pushed", shell_view);
+                         }
+                     }
+                     Err(e) => {
+@@ -1378,14 +1378,14 @@
+     // This is important after view transitions (like unlock) to ensure clean state
+     let mut fresh_tracker = if shell_view == ShellView::Switcher || shell_view == ShellView::Home
+         || shell_view == ShellView::LockScreen || shell_view == ShellView::QuickSettings {
+-        tracing::info!("{:?}: creating fresh damage tracker for full redraw", shell_view);
++        tracing::debug!("{:?}: creating fresh damage tracker for full redraw", shell_view);
+         Some(OutputDamageTracker::from_output(output))
+     } else {
+         None
+     };
+ 
+     // Debug: log all render branch conditions
+-    tracing::info!("RENDER BRANCH DEBUG: view={:?}, lock_active={}, space_count={}, qs_gesture={}, qs_home_gesture={}, home_gesture={}, switcher_gesture={}, slint_elements={}",
++    tracing::debug!("RENDER BRANCH DEBUG: view={:?}, lock_active={}, space_count={}, qs_gesture={}, qs_home_gesture={}, home_gesture={}, switcher_gesture={}, slint_elements={}",
+         shell_view,
+         state.shell.lock_screen_active,
+         state.space.elements().count(),
+@@ -1411,7 +1411,7 @@
+     }
+ 
+     let render_res = if shell_view == ShellView::Switcher && !switcher_home_gesture_active {
+-        tracing::info!("RENDER BRANCH: Switcher (not home gesture)");
++        tracing::debug!("RENDER BRANCH: Switcher (not home gesture)");
+         // Switcher view - render window cards
+         let tracker = fresh_tracker.as_mut().unwrap();
+         tracker.render_output(
+@@ -1422,7 +1422,7 @@
+             bg_color,
+         )
+     } else if switcher_home_gesture_active {
+-        tracing::info!("RENDER BRANCH: Switcher home gesture");
++        tracing::debug!("RENDER BRANCH: Switcher home gesture");
+         // During Switcher home gesture: slide switcher up, reveal home grid behind
+         use smithay::backend::renderer::element::surface::WaylandSurfaceRenderElement;
+         use smithay::backend::renderer::element::utils::{RescaleRenderElement, Relocate, RelocateRenderElement, CropRenderElement};
+@@ -1550,7 +1550,7 @@
+             [0.1, 0.1, 0.18, 1.0],
+         )
+     } else if shell_view == ShellView::LockScreen && state.shell.lock_screen_active && state.space.elements().count() > 0 {
+-        tracing::info!("RENDER BRANCH: LockScreen with QML app");
++        tracing::debug!("RENDER BRANCH: LockScreen with QML app");
+         // Lock screen with external QML app - render ONLY the QML app window
+         // No Slint elements needed - the QML app is fullscreen
+         use smithay::backend::renderer::element::surface::WaylandSurfaceRenderElement;
+@@ -1591,7 +1591,7 @@
+             }
+         }
+ 
+-        tracing::info!("Lock screen QML app: {} window elements", lock_elements.len());
++        tracing::debug!("Lock screen QML app: {} window elements", lock_elements.len());
+ 
+         // Check if keyboard should be rendered on top of QML lock screen
+         let keyboard_visible = state.shell.slint_ui.as_ref()
+@@ -1602,7 +1602,7 @@
+         let lock_bg: [f32; 4] = [0.05, 0.05, 0.08, 1.0];
+ 
+         if keyboard_visible {
+-            tracing::info!("Lock screen: rendering keyboard overlay on top of QML app");
++            tracing::debug!("Lock screen: rendering keyboard overlay on top of QML app");
+             // Render keyboard overlay from Slint on top of QML lock screen
+             if let Some(ref slint_ui) = state.shell.slint_ui {
+                 // Set view to app for keyboard-only render (keyboard appears in app view)
+@@ -1614,7 +1614,7 @@
+                     // Keyboard height is 32% of screen, minimum 280px (matches Slint)
+                     let keyboard_height: u32 = std::cmp::max(280, (height as f32 * 0.32) as u32);
+                     let keyboard_y = height.saturating_sub(keyboard_height);
+-                    tracing::info!("Lock screen keyboard render: slint buffer {}x{}, keyboard_height={}, keyboard_y={}",
++                    tracing::debug!("Lock screen keyboard render: slint buffer {}x{}, keyboard_height={}, keyboard_y={}",
+                         width, height, keyboard_height, keyboard_y);
+ 
+                     // Create a smaller buffer just for the keyboard
+@@ -1658,7 +1658,7 @@
+                     ) {
+                         // Insert keyboard at position 0 (front) so it renders ON TOP of Python lock screen
+                         lock_elements.insert(0, SwitcherRenderElement::Icon(slint_element));
+-                        tracing::info!("Lock screen: keyboard overlay added at y={}", keyboard_y_pos);
++                        tracing::debug!("Lock screen: keyboard overlay added at y={}", keyboard_y_pos);
+                     }
+                 }
+             }
+@@ -1666,7 +1666,7 @@
+ 
+         // Use fresh damage tracker for lock screen to ensure clean state
+         if let Some(ref mut tracker) = fresh_tracker {
+-            tracing::info!("Using fresh damage tracker for LockScreen with Python app (keyboard_visible={})", keyboard_visible);
++            tracing::debug!("Using fresh damage tracker for LockScreen with Python app (keyboard_visible={})", keyboard_visible);
+             tracker.render_output(
+                 renderer,
+                 &mut fb,
+@@ -1684,12 +1684,12 @@
+             )
+         }
+     } else if (shell_view == ShellView::LockScreen || shell_view == ShellView::Home || shell_view == ShellView::PickDefault || shell_view == ShellView::QuickSettings) && !state.qs_gesture_active && !qs_home_gesture_active {
+-        tracing::info!("RENDER BRANCH: Shell view ({:?}) with Slint", shell_view);
++        tracing::debug!("RENDER BRANCH: Shell view ({:?}) with Slint", shell_view);
+         // Shell views - render Slint UI (but not during QS gesture transitions)
+-        tracing::info!("Rendering {:?} with {} slint_elements, bg={:?}", shell_view, slint_elements.len(), bg_color);
++        tracing::debug!("Rendering {:?} with {} slint_elements, bg={:?}", shell_view, slint_elements.len(), bg_color);
+         // Use fresh damage tracker for shell views to ensure clean state after view transitions
+         if let Some(ref mut tracker) = fresh_tracker {
+-            tracing::info!("Using fresh damage tracker for {:?}", shell_view);
++            tracing::debug!("Using fresh damage tracker for {:?}", shell_view);
+             tracker.render_output(
+                 renderer,
+                 &mut fb,
+@@ -1725,7 +1725,7 @@
+                         1.0,
+                     );
+ 
+-                tracing::info!("Home gesture: rendering window at loc=({}, {}), {} elements",
++                tracing::debug!("Home gesture: rendering window at loc=({}, {}), {} elements",
+                     loc.x, loc.y, window_render_elements.len());
+ 
+                 // Relocate each element to the window's current position in the space
+@@ -1767,7 +1767,7 @@
+             }
+         }
+ 
+-        tracing::info!("Home gesture: total {} elements", home_gesture_elements.len());
++        tracing::debug!("Home gesture: total {} elements", home_gesture_elements.len());
+ 
+         surface_data.damage_tracker.render_output(
+             renderer,
+@@ -2155,7 +2155,7 @@
+             [0.1, 0.1, 0.18, 1.0],
+         )
+     } else {
+-        tracing::info!("RENDER BRANCH: App view (fallback else)");
++        tracing::debug!("RENDER BRANCH: App view (fallback else)");
+         // App view - render windows (with optional keyboard overlay)
+         use smithay::backend::renderer::element::surface::WaylandSurfaceRenderElement;
+         use smithay::desktop::space::SpaceRenderElements;
+@@ -2181,7 +2181,7 @@
+                     // Keyboard height is 32% of screen, minimum 280px (matches Slint)
+                     let keyboard_height: u32 = std::cmp::max(280, (height as f32 * 0.32) as u32);
+                     let keyboard_y = height.saturating_sub(keyboard_height);
+-                    tracing::info!("Keyboard render: slint buffer {}x{}, keyboard_height={}, keyboard_y={}, pixels.len={}",
++                    tracing::debug!("Keyboard render: slint buffer {}x{}, keyboard_height={}, keyboard_y={}, pixels.len={}",
+                         width, height, keyboard_height, keyboard_y, pixels.len());
+ 
+                     // Create a smaller buffer just for the keyboard
+@@ -2195,7 +2195,7 @@
+                             keyboard_pixels.extend_from_slice(&pixels[row_start..row_end]);
+                         }
+                     }
+-                    tracing::info!("Keyboard pixels copied: {} bytes, expected {}",
++                    tracing::debug!("Keyboard pixels copied: {} bytes, expected {}",
+                         keyboard_pixels.len(), width * keyboard_height * 4);
+ 
+                     let mut mem_buffer = MemoryRenderBuffer::new(
+@@ -2227,7 +2227,7 @@
+                     ) {
+                         // Add keyboard overlay FIRST (on top in front-to-back)
+                         app_keyboard_elements.push(SwitcherRenderElement::Icon(slint_element));
+-                        tracing::info!("App view: keyboard overlay added (cropped to {}px at y={})", keyboard_height, keyboard_y_pos);
++                        tracing::debug!("App view: keyboard overlay added (cropped to {}px at y={})", keyboard_height, keyboard_y_pos);
+                     }
+                 }
+             }
+@@ -2336,7 +2336,7 @@
+             let has_damage = render_output_result.damage.is_some();
+             let damage_rects = render_output_result.damage.as_ref().map(|d| d.len()).unwrap_or(0);
+             if shell_view == ShellView::Switcher {
+-                tracing::info!("{:?} render OK: has_damage={}, damage_rects={}", shell_view, has_damage, damage_rects);
++                tracing::debug!("{:?} render OK: has_damage={}, damage_rects={}", shell_view, has_damage, damage_rects);
+             }
+ 
+             // Get sync point from the render
+@@ -2352,7 +2352,7 @@
+                     surface_data.frame_pending = true;
+                     surface_data.ready_to_render = false;
+                     if shell_view == ShellView::Switcher {
+-                        tracing::info!("{:?} frame queued successfully", shell_view);
++                        tracing::debug!("{:?} frame queued successfully", shell_view);
+                     }
+                     debug!("Frame queued successfully");
+                 }

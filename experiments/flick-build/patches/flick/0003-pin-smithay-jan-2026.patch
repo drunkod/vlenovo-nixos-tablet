@@ -1,0 +1,22 @@
+diff --git a/shell/Cargo.toml b/shell/Cargo.toml
+index 58528b8..4131945 100644
+--- a/shell/Cargo.toml
++++ b/shell/Cargo.toml
+@@ -15,7 +15,7 @@ slint = { version = "=1.7.2", default-features = false, features = ["compat-1-2"
+
+ # Smithay - the Wayland compositor library (from git for latest features)
+ # Note: On this branch we use hwcomposer backend, but keep DRM/udev for winit dev mode
+-smithay = { git = "https://github.com/Smithay/smithay", features = [
++smithay = { git = "https://github.com/Smithay/smithay", rev = "1ca641f5bef0b09d36cec757bbb31b255c6b7b7f", features = [
+     "backend_drm",
+     "backend_libinput",
+     "backend_udev",
+@@ -27,7 +27,7 @@ smithay = { git = "https://github.com/Smithay/smithay", features = [
+ ] }
+
+ # Wayland protocols
+-smithay-drm-extras = { git = "https://github.com/Smithay/smithay" }
++smithay-drm-extras = { git = "https://github.com/Smithay/smithay", rev = "1ca641f5bef0b09d36cec757bbb31b255c6b7b7f" }
+
+ # Logging
+ tracing = "0.1"

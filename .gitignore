@@ -5,3 +5,7 @@ result-*
 .DS_Store
 debug/
 gpu-captures/
+
+# Local, reproducible source and Nix scratch build trees
+/.flick-test-source/
+/.flick-nix-candidate/
