@@ -17,10 +17,18 @@
         cargo = rustPkgs.cargo;
         rustc = rustPkgs.rustc;
       };
+      flickPackages = pkgs.callPackage ./pkgs/flick { inherit rustPlatform; };
     in {
-      packages.x86_64-linux.flick = pkgs.callPackage ./pkgs/flick {
-        inherit rustPlatform;
-      };
-      packages.x86_64-linux.default = pkgs.callPackage ./pkgs/flick { inherit rustPlatform; };
+      # Known-good, logging-only build: remains the default.
+      packages.x86_64-linux.flick = flickPackages;
+      packages.x86_64-linux.default = flickPackages;
+
+      # Independent experiment. The eighth patch is NOT in the default build.
+      packages.x86_64-linux.flick-qml-experimental =
+        flickPackages.unwrapped.overrideAttrs (old: {
+          patches = old.patches ++ [
+            ./patches/flick/0008-skip-qml-obscured-slint-render.patch
+          ];
+        });
     };
 }

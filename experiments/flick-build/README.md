@@ -37,3 +37,18 @@ See `../../docs/graphics/FLICK_RENDER_LOGGING_EXPERIMENT.md` and `../../mvp/nati
 ## Confirmed binary build
 
 The Mac-hosted Rosetta x86_64 Linux build **completed successfully** on 2026-10-21 with the logging-only seventh patch. Nix result: `/nix/store/3j68fnhw24dz4vnxhijhngq7923nn4lw-flick-unstable-2026-01-04`, validated tablet-staged binary SHA-256 `ad01f34e4576f0b8d6a8254835884758179df40923cb377564c0fc4c7dc2f7f6`. For the first build, a 3 GiB swap file was temporarily required inside the VM during final Rust code generation. The unactivated and still-unmeasured result, execution details and future rollback requirements are documented in `../../docs/graphics/FLICK_MAC_BUILD_RESULT_2026-10-21.md`.
+
+## Separate QML-only experimental build target (2026-10-21)
+
+The flake now preserves two distinct outputs. `flick.unwrapped` remains the **logging-only** build that succeeded and was staged. The new `flick-qml-experimental` output applies an **eighth** patch *after* the seven known patches and does not alter the default package:
+
+```bash
+docker --context colima-vlenovo-flick-build exec vlenovo-flick-nixbuild \
+  nix --extra-experimental-features 'nix-command flakes' \
+  --option sandbox false --option filter-syscalls false \
+  --option max-jobs 2 --option cores 2 \
+  build 'path:/work#packages.x86_64-linux.flick-qml-experimental' \
+  --no-link --print-out-paths -L
+```
+
+The experimental derivation evaluates and the actual Nix patch phase **successfully applied all eight patches** on 2026-10-21. Cargo began building the new release candidate. This does not imply runtime safety or measured power/CPU improvement. The QML patch is scoped to skipping unused full-screen Slint rasterisation when the existing QML lock-screen rendering branch is selected. Slint event processing and its keyboard overlay path are preserved.

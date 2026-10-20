@@ -32,3 +32,9 @@ The general `slint_ui.process_events()` call **still runs**, and the QML branch'
 - For a separate follow-up candidate, add patch 0002 as an eighth patch after the log patch, compile it, and test the QML lock screen, PIN entry, unlock, keyboard appearance/dismissal, no-QML Slint fallback, notifications, touch feedback and VT switching.
 - Compare idle Flick CPU/PSS, logs, GPU frequency, actual Slint full-screen buffer allocations/copies, frame callbacks, and touch latency. Test for regressions in QML lock screen coverage and video composition.
 - Never restart the compositor over SSH without an explicit rollback gate and physical access. The active tablet compositor and NixOS boot generation remain unchanged.
+
+## Independent experimental packaging and updated live baseline
+
+A new standalone flake target `experiments/flick-build#flick-qml-experimental` was added without changing the proven `flick.unwrapped` logging-only output. It appends `experiments/flick-build/patches/flick/0008-skip-qml-obscured-slint-render.patch` to the six integration patches and seventh logging patch. The Nix derivation evaluated and the **actual Nix patchPhase applied all eight patches** before Cargo release compilation began.
+
+A fresh **read-only 10-second baseline** was captured at `2026-10-20T19:57:16Z`: Flick CPU **90.3% of one core**, log throughput **6,565.8 bytes/s**, RSS **130,076 KiB**. The active log specifically showed `render_surface: view=LockScreen`, `Slint render result: Some((1920, 1200))`, and an external QML lock-screen branch. Evidence: `mvp/native/benchmarks/2026-10-21-flick-pre-qml-opt.txt`. These are *pre-activation* measurements; they do not establish a patch improvement.
