@@ -72,6 +72,24 @@ if [[ "$variant" == "qt-egl" || "$variant" == "qt-egl-qml" ]]; then
     echo "wl_drm_egl_source_signature=FOUND"
 fi
 sha="$(shasum -a 256 "$local_bin" | awk '{print $1}')"
+if [[ "$variant" == "qt-egl-qml" ]]; then
+    # A successful native Nix build does not itself show that the QML
+    # optimisation survived compilation. Require a different binary than the
+    # separately validated Qt EGL-only release, whose archived hash is pinned.
+    standalone="$STAGE_DIR/flick-qt-egl-experimental-x86_64"
+    known_qt_egl_sha=361d97fcda198e202540298a23455496cabbaaf70a825a58ae85747b11a72f04
+    [[ -f "$standalone" ]] || {
+        echo "Missing separate Qt EGL comparator binary: $standalone" >&2; exit 1;
+    }
+    comparator_sha="$(shasum -a 256 "$standalone" | awk '{print $1}')"
+    [[ "$comparator_sha" == "$known_qt_egl_sha" ]] || {
+        echo "Qt EGL comparator hash differs from validated artifact" >&2; exit 1;
+    }
+    [[ "$sha" != "$known_qt_egl_sha" ]] || {
+        echo "Combined binary equals fourth Qt EGL candidate; QML change missing" >&2; exit 1;
+    }
+    echo "combined_vs_qt_egl_binary=DISTINCT"
+fi
 printf 'variant=%s\nstore_path=%s\nsha256=%s\n' "$variant" "$out" "$sha"
 docker --context "$CONTEXT" exec "$CONTAINER" "$out/bin/flick" --help | head -14
 
