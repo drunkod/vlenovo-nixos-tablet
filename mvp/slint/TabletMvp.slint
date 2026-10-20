@@ -1,0 +1,165 @@
+// Lenovo Miix 2 10 — Slint touch experiment (no system installation)
+// A deliberately small frontend: interaction is local, with no AI/network claims.
+export component TabletMvp inherits Window {
+    title: "Lenovo AI OS • MVP";
+    width: 1100px;
+    height: 720px;
+    background: #080e1b;
+
+    in-out property <string> response-text: "Tap a card to test the touch response.";
+    in-out property <int> action-count: 0;
+    callback test-event(string);
+
+    VerticalLayout {
+        padding: 26px;
+        spacing: 16px;
+
+        HorizontalLayout {
+            spacing: 20px;
+            height: 110px;
+            VerticalLayout {
+                spacing: 4px;
+                Text {
+                    text: "Lenovo OS";
+                    color: #e8f3ff;
+                    font-size: 44px;
+                    font-weight: 700;
+                }
+                Text {
+                    text: "NATIVE UI EXPERIMENT  /  SLINT";
+                    color: #87acd3;
+                    font-size: 17px;
+                }
+            }
+            Rectangle {
+                width: 265px;
+                background: #123325;
+                border-radius: 16px;
+                Text {
+                    text: "●  OFFLINE FIRST";
+                    color: #73e5b2;
+                    font-size: 20px;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                }
+            }
+        }
+
+        Rectangle {
+            height: 105px;
+            background: #121e32;
+            border-radius: 18px;
+            VerticalLayout {
+                padding: 18px;
+                spacing: 6px;
+                Text {
+                    text: "LOCAL HARDWARE • VERIFIED SNAPSHOT";
+                    color: #7eb9fb;
+                    font-size: 17px;
+                }
+                Text {
+                    text: "Intel Bay Trail  •  1.8 GiB RAM  •  Flick / Wayland  •  NixOS";
+                    color: #f4f7fd;
+                    font-size: 22px;
+                }
+            }
+        }
+
+        Text {
+            text: "Try a command";
+            color: #e8f3ff;
+            font-size: 27px;
+            height: 47px;
+            font-weight: 700;
+        }
+
+        HorizontalLayout {
+            spacing: 16px;
+            height: 172px;
+
+            Rectangle {
+                background: #19365e;
+                border-radius: 20px;
+                VerticalLayout {
+                    padding: 18px;
+                    spacing: 10px;
+                    Text { text: "01  STATUS"; color: #7ccaff; font-size: 18px; }
+                    Text { text: "System overview"; color: #ffffff; font-size: 25px; }
+                    Text { text: "Touch to inspect"; color: #abc2e6; font-size: 17px; }
+                }
+                TouchArea {
+                    clicked => {
+                        root.action-count += 1;
+                        root.response-text = "System: NixOS 25.05, Linux 6.12.36. This is a saved snapshot, not live polling.";
+                        root.test-event("status");
+                    }
+                }
+            }
+
+            Rectangle {
+                background: #29324d;
+                border-radius: 20px;
+                VerticalLayout {
+                    padding: 18px;
+                    spacing: 10px;
+                    Text { text: "02  ASSIST"; color: #cbb3ff; font-size: 18px; }
+                    Text { text: "Ask locally"; color: #ffffff; font-size: 25px; }
+                    Text { text: "Offline interaction"; color: #b8c3dd; font-size: 17px; }
+                }
+                TouchArea {
+                    clicked => {
+                        root.action-count += 1;
+                        root.response-text = "Assistant stub: input works. On-device model integration is the next experiment.";
+                        root.test-event("assist");
+                    }
+                }
+            }
+
+            Rectangle {
+                background: #19443f;
+                border-radius: 20px;
+                VerticalLayout {
+                    padding: 18px;
+                    spacing: 10px;
+                    Text { text: "03  NETWORK"; color: #88e7c0; font-size: 18px; }
+                    Text { text: "Stay connected"; color: #ffffff; font-size: 25px; }
+                    Text { text: "Safe, read-only demo"; color: #a6d2bf; font-size: 17px; }
+                }
+                TouchArea {
+                    clicked => {
+                        root.action-count += 1;
+                        root.response-text = "Wi-Fi was connected at the last SSH check. No network settings were modified.";
+                        root.test-event("network");
+                    }
+                }
+            }
+        }
+
+        Rectangle {
+            height: 140px;
+            background: #18243a;
+            border-radius: 18px;
+            VerticalLayout {
+                padding: 19px;
+                spacing: 9px;
+                Text {
+                    text: "LOCAL RESPONSE   /   TAPS: " + root.action-count;
+                    color: #7eb9fb;
+                    font-size: 17px;
+                }
+                Text {
+                    text: root.response-text;
+                    color: #f4f7ff;
+                    font-size: 23px;
+                    wrap: word-wrap;
+                }
+            }
+        }
+
+        Text {
+            text: "Experimental app, not a system update. Close with Ctrl+C from SSH.";
+            color: #8399b8;
+            font-size: 17px;
+        }
+    }
+}

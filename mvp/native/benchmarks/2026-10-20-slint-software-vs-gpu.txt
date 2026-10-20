@@ -1,0 +1,32 @@
+time_utc=2026-10-20T17:36:42Z
+=== MODE=winit-software ===
+pid=5567
+    PID   RSS %CPU     ELAPSED COMMAND
+   5567 82556 13.5       00:05 .slint-viewer-w
+Rss:               82896 kB
+Pss:               66807 kB
+Private_Clean:     34108 kB
+Private_Dirty:     21292 kB
+EGL/Gallium maps:
+timeout_exit=124
+[2026-10-20T17:36:43Z ERROR sctk_adwaita::config] XDG Settings Portal did not return response in time: timeout: 100ms, key: color-scheme
+=== MODE=winit-femtovg ===
+pid=5608
+    PID   RSS %CPU     ELAPSED COMMAND
+   5608 217900 36.6      00:05 .slint-viewer-w
+Rss:              218464 kB
+Pss:              200349 kB
+Private_Clean:     95436 kB
+Private_Dirty:     92464 kB
+EGL/Gallium maps:
+/nix/store/cpwib3zazj49fm0y04y53w4xkbqsgrgm-mesa-25.0.7/lib/libEGL_mesa.so.0.0.0
+/nix/store/cpwib3zazj49fm0y04y53w4xkbqsgrgm-mesa-25.0.7/lib/libgallium-25.0.7.so
+timeout_exit=124
+[2026-10-20T17:36:58Z ERROR sctk_adwaita::config] XDG Settings Portal did not return response in time: timeout: 100ms, key: color-scheme
+=== POST-CHECK ===
+active
+active
+active
+active
+    PID   RSS %CPU     ELAPSED COMMAND
+   5302 43944  9.9       16:33 lenovo-native-m

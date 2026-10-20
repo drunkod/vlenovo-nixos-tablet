@@ -1,0 +1,17 @@
+top - 17:37:01 up 47 min,  3 users,  load average: 2.29, 2.18, 2.28
+Tasks:   1 total,   0 running,   1 sleeping,   0 stopped,   0 zombie
+%Cpu(s): 15.6 us,  8.9 sy,  0.0 ni, 68.9 id,  4.4 wa,  2.2 hi,  0.0 si,  0.0 st
+MiB Mem :   1866.4 total,    263.4 free,    787.9 used,   1132.3 buff/cache
+MiB Swap:   8561.0 total,   8452.2 free,    108.8 used.   1078.5 avail Mem
+
+    PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND
+   5608 alex      20   0 1864324 217900 125732 S   0.0  11.4   0:01.86 .slint-+
+
+top - 17:37:03 up 47 min,  3 users,  load average: 2.27, 2.18, 2.27
+Tasks:   1 total,   0 running,   1 sleeping,   0 stopped,   0 zombie
+%Cpu(s): 29.6 us,  4.9 sy,  0.0 ni, 62.0 id,  2.3 wa,  1.0 hi,  0.2 si,  0.0 st
+MiB Mem :   1866.4 total,    263.4 free,    787.9 used,   1132.3 buff/cache
+MiB Swap:   8561.0 total,   8452.2 free,    108.8 used.   1078.5 avail Mem
+
+    PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND
+   5608 alex      20   0 1864324 217900 125732 S   0.0  11.4   0:01.86 .slint-+

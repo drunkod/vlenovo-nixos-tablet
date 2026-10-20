@@ -1,0 +1,5 @@
+/target/
+*.log
+/telemetry-smoke.rs
+/TabletDashboard.preview.slint
+.DS_Store

@@ -118,5 +118,12 @@ Never start by replacing i915. First capture a reproducible symptom, determine
 whether it belongs to kernel display/GT code, Mesa Crocus, media/VA-API, or the
 compositor, and then test the smallest possible upstream/backport/quirk change.
 
-All kernel experiments must use a separate NixOS generation and
-`nixos-rebuild test` before any permanent switch.
+All kernel experiments must use a separate NixOS generation and actually
+boot that kernel before testing it. `nixos-rebuild test` cannot replace the
+running kernel. `nixos-rebuild boot` installs the candidate as the boot default;
+retain the known-good generation in GRUB and arrange local recovery before
+rebooting. Reboot alone does not roll back a `boot` experiment.
+
+For userspace-only experiments, `nixos-rebuild test` leaves the boot default
+unchanged. Restart affected applications/the graphical session and verify the
+libraries they loaded. See `PORTING-PLAN.md` and `RESEARCH-REVIEW.md`.

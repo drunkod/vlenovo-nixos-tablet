@@ -64,9 +64,17 @@ Only after a reproducible device-specific defect is proven:
 
 ## Kernel acceptance gate
 
-Before a patched kernel becomes permanent:
+Before retaining a patched kernel as the normal boot default:
 
-- SSH works after activation.
+- Build a separate generation and retain the known-good generation in GRUB.
+- Arrange local boot-menu recovery before rebooting; SSH cannot recover a
+  kernel which never brings up networking.
+- Remember that `nixos-rebuild boot` changes the boot default. It is not a
+  one-shot boot, and another reboot will not automatically select the old kernel.
+- Actually boot the candidate and verify `uname -r` plus `/run/booted-system`
+  against its expected kernel package/generation. `nixos-rebuild test` alone
+  does not exercise a new kernel.
+- Fresh SSH works after the candidate boot.
 - DSI-1 is connected at 1920x1200@60.
 - No new i915 errors or GPU resets.
 - No persistent FIFO underruns.
@@ -82,6 +90,14 @@ Before a patched kernel becomes permanent:
 
 For a Crocus experiment, run the application against a local Mesa build first.
 Do not replace the system Mesa until the test case is demonstrably fixed.
+A local application test does not change Mesa inside an already-running Sway.
+For compositor measurements, restart Sway in the candidate environment and
+verify its loaded EGL/Gallium/GBM libraries, not just `glxinfo` from a shell.
+
+Distinguish two experiments: a newer-Mesa comparison measures the entire
+upgrade; an otherwise identical Mesa build with/without one patch isolates
+that patch. Keep separate cold/warm shader caches and repeat alternating A/B
+trials. See `RESEARCH-REVIEW.md` for the Crocus precompilation candidate.
 
 ## Evidence to save for every experiment
 
