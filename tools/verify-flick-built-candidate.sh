@@ -58,6 +58,15 @@ if ! file "$local_bin" | grep -q 'ELF 64-bit.*x86-64'; then
     echo "Not a Linux x86-64 ELF binary" >&2
     exit 1
 fi
+# Feature-specific compile signature: verify that the new EGL/WL DRM
+# registration code was linked, not just that a generic Flick --help works.
+if [[ "$variant" == "qt-egl" ]]; then
+    if ! /usr/bin/strings -a "$local_bin" | grep -F         'Registered wl_drm through renderer EGL Wayland binding' >/dev/null; then
+        echo "Expected Qt EGL/wl_drm binding code not present in binary" >&2
+        exit 1
+    fi
+    echo "wl_drm_egl_source_signature=FOUND"
+fi
 sha="$(shasum -a 256 "$local_bin" | awk '{print $1}')"
 printf 'variant=%s\nstore_path=%s\nsha256=%s\n' "$variant" "$out" "$sha"
 docker --context "$CONTEXT" exec "$CONTAINER" "$out/bin/flick" --help | head -14
