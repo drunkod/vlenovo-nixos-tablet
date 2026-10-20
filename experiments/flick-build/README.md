@@ -52,3 +52,7 @@ docker --context colima-vlenovo-flick-build exec vlenovo-flick-nixbuild \
 ```
 
 The experimental derivation evaluates and the actual Nix patch phase **successfully applied all eight patches** on 2026-10-21. Cargo began building the new release candidate. This does not imply runtime safety or measured power/CPU improvement. The QML patch is scoped to skipping unused full-screen Slint rasterisation when the existing QML lock-screen rendering branch is selected. Slint event processing and its keyboard overlay path are preserved.
+
+### Repeatable non-destructive artifact check
+
+From the worktree root, `tools/verify-flick-built-candidate.sh logging` verifies the already-built logging-only Nix output path, ELF architecture, SHA-256 and `--help` smoke test. After the experimental build finishes, use `tools/verify-flick-built-candidate.sh qml` for an identical check. Either mode accepts the **explicit** `--stage` flag to copy its verified binary to the tablet's unprivileged `~/lenovo-mvp/builds/` directory, verify matching checksums, run `--help`, and confirm essential services remain up. The tool **never activates**, restarts or replaces Flick and **never changes** the tablet's NixOS generation.
