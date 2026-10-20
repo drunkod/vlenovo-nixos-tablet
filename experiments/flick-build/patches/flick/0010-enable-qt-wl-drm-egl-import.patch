@@ -1,0 +1,55 @@
+diff --git a/shell/src/backend/udev.rs b/shell/src/backend/udev.rs
+--- a/shell/src/backend/udev.rs
++++ b/shell/src/backend/udev.rs
+@@ -55,11 +55,11 @@
+ use smithay::wayland::xwayland_shell::XWaylandShellState;
+ use smithay::xwayland::{XWayland, XWaylandEvent, xwm::X11Wm};
+ use smithay::backend::renderer::element::solid::SolidColorRenderElement;
+ use smithay::backend::renderer::element::surface::WaylandSurfaceRenderElement;
+ use smithay::backend::renderer::element::memory::{MemoryRenderBuffer, MemoryRenderBufferRenderElement};
+-use smithay::backend::renderer::{ImportAll, ImportMem, ImportDma};
++use smithay::backend::renderer::{ImportAll, ImportMem, ImportDma, ImportEgl};
+ use smithay::wayland::seat::WaylandFocus;
+ 
+ use crate::state::Flick;
+ 
+ /// Simple 5x7 bitmap font for window titles
+@@ -701,12 +701,22 @@
+     // Get supported render formats from EGL
+     let render_formats = egl_context.dmabuf_render_formats().clone();
+     info!("Got render formats from EGL context");
+ 
+     // Create renderer
+-    let renderer = unsafe { GlesRenderer::new(egl_context) }
++    let mut renderer = unsafe { GlesRenderer::new(egl_context) }
+         .map_err(|e| anyhow::anyhow!("Failed to create GLES renderer: {:?}", e))?;
++
++    // Mesa/Qt 5 Wayland-EGL clients still need wl_drm in addition to
++    // zwp_linux_dmabuf_v1. Binding Smithay's EGL renderer advertises it
++    // and enables wl_drm buffer imports through ImportAll. Only the
++    // current GPU's EGLDisplay is bound; warn and preserve SHM fallback
++    // if the platform does not provide EGL_WL_bind_wayland_display.
++    match renderer.bind_wl_display(&state.display_handle) {
++        Ok(()) => info!("Registered wl_drm through renderer EGL Wayland binding"),
++        Err(e) => warn!("wl_drm EGL Wayland binding unavailable: {:?}", e),
++    }
+ 
+     info!("GPU initialized successfully");
+ 
+     // Advertise only EGL-supported DMA-BUF formats to Wayland clients, using
+     // the render node associated with THIS DRM device (not the first /dev/dri
+diff --git a/shell/Cargo.toml b/shell/Cargo.toml
+--- a/shell/Cargo.toml
++++ b/shell/Cargo.toml
+@@ -20,10 +20,11 @@
+     "backend_libinput",
+     "backend_udev",
+     "backend_session_libseat",
+     "backend_winit",
+     "renderer_glow",
++    "use_system_lib",
+     "wayland_frontend",
+     "xwayland",
+ ] }
+ 
+ # Wayland protocols

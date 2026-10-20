@@ -39,5 +39,15 @@
             ./patches/flick/0009-native-drm-validated-dmabuf.patch
           ];
         });
+
+      # Fourth isolated experiment. Existing variants remain unchanged.
+      # Includes validated DMA-BUF protocol PLUS wl_drm/Wayland-EGL binding.
+      packages.x86_64-linux.flick-qt-egl-experimental =
+        flickPackages.unwrapped.overrideAttrs (old: {
+          patches = old.patches ++ [
+            ./patches/flick/0009-native-drm-validated-dmabuf.patch
+            ./patches/flick/0010-enable-qt-wl-drm-egl-import.patch
+          ];
+        });
     };
 }
