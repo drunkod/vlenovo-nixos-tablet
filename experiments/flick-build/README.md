@@ -22,7 +22,7 @@ nix build .#packages.x86_64-linux.flick --no-link --print-out-paths -L
 
 The seven-patch sequence was independently checked on the MacBook by archiving upstream commit `729cdece…` from `.local/references/Flick`, then applying the six original NixOS patches followed by the new logging patch. Every `git apply --check` passed in order. The packaged source also uses its pinned `fetchFromGitHub` hash; it can build independently of the local source checkout when Nix has network access.
 
-**Build platform:** x86_64 Linux. This MacBook is ARM64 Darwin; its `builders` setting currently points at `@/etc/nix/machines` but that file is absent in the visible environment. A successful Nix evaluation or `--dry-run` does *not* mean a working x86_64 Linux build worker exists. Configure/attach an authorised Linux builder before attempting a Mac-initiated full build, or compile the package on the tablet using two jobs when an appropriate maintenance window is available. Do not infer this is a cross-compiled ARM64 binary.
+**Build platform:** x86_64 Linux. On 2026-10-21 a dedicated Colima VZ/Linux VM with Rosetta x86_64 emulation was successfully started on the ARM64 MacBook, and an x86_64 Linux Nix 2.28.4 container was verified. The candidate build was started inside that container with two concurrent jobs. See `../../docs/graphics/MAC_LINUX_FLICK_BUILDER_2026-10-21.md` for exact setup, logs, and current outcome. This is an x86_64 Linux guest build using MacBook CPUs; it is not an ARM64 Darwin binary. Source evaluation alone does not demonstrate a successful binary build.
 
 ## What this patch does
 
