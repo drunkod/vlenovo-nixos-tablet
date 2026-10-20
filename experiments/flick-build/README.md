@@ -17,7 +17,9 @@ From the optimisation branch:
 ```bash
 cd experiments/flick-build
 nix eval --raw .#packages.x86_64-linux.flick.name
-nix build .#packages.x86_64-linux.flick --no-link --print-out-paths -L
+nix --option sandbox false --option filter-syscalls false \
+  --option max-jobs 2 --option cores 2 \
+  build .#packages.x86_64-linux.flick.unwrapped --no-link --print-out-paths -L
 ```
 
 The seven-patch sequence was independently checked on the MacBook by archiving upstream commit `729cdece…` from `.local/references/Flick`, then applying the six original NixOS patches followed by the new logging patch. Every `git apply --check` passed in order. The packaged source also uses its pinned `fetchFromGitHub` hash; it can build independently of the local source checkout when Nix has network access.

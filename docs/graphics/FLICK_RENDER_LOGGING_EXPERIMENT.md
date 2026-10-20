@@ -32,10 +32,10 @@ The sampler reads Flick's PID, CPU jiffies, file size and recent log lines; it d
 
 ```bash
 cd ~/Documents/Work/vlenovo-nixos-tablet/.local/references/Flick
-git apply --check ../../worktrees/vlenovo-flick-gpu-opt/patches/flick/0001-throttle-render-info-logs.patch
+git apply --unidiff-zero --check ../../worktrees/vlenovo-flick-gpu-opt/patches/flick/0001-throttle-render-info-logs.patch
 ```
 
-The above check passed against reference `ffb8422`. Do not apply it directly to the shared archived reference tree or overwrite a running binary. For actual testing, make a **separate Flick source worktree** pinned to the current package revision, apply there, compile the candidate separately, and save the binary hash. Before any restart, ensure local access, known-good boot generation, SSH rollback and explicit approval for interrupting the session.
+The initial patch passed Git's check against reconstructed sources but one context-heavy hunk failed in Nix's GNU `patch` phase. The corrected seventh patch uses **30 uniquely targeted, zero-context replacements**, validated with `git apply --unidiff-zero --check` and `patch --dry-run -p1` on the pinned upstream source plus six integration patches. The actual Nix patch phase then applied all 30 hunks and started Cargo release compilation. Do not apply it directly to the shared archived reference tree or overwrite a running binary. For actual testing, make a **separate Flick source worktree** pinned to the current package revision, apply there, compile the candidate separately, and save the binary hash. Before any restart, ensure local access, known-good boot generation, SSH rollback and explicit approval for interrupting the session.
 
 ## Next engineering steps
 

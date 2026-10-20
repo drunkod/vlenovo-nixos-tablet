@@ -1,0 +1,133 @@
+diff --git a/shell/src/backend/udev.rs b/shell/src/backend/udev.rs
+--- a/shell/src/backend/udev.rs
++++ b/shell/src/backend/udev.rs
+@@ -1075,63 +1075,72 @@
+             // Process Slint events (timers, animations) before rendering
+             slint_ui.process_events();
+ 
+-            // Render Slint UI to pixel buffer
+-            slint_ui.request_redraw();
+-            let render_result = slint_ui.render();
+-            tracing::debug!("Slint render result: {:?}", render_result.as_ref().map(|(w, h, _)| (*w, *h)));
+-            if let Some((width, height, pixels)) = render_result {
+-                // DEBUG: Sample center pixel from Slint output
+-                let center_offset = (width * height * 2) as usize; // middle of RGBA buffer
+-                if pixels.len() > center_offset + 4 {
+-                    let sample = (pixels[center_offset], pixels[center_offset+1], pixels[center_offset+2], pixels[center_offset+3]);
+-                    tracing::debug!("UDEV: {:?} Slint center pixel RGBA={:?}", shell_view, sample);
+-                }
+-
+-                // Create MemoryRenderBuffer from Slint's pixel output
+-                // Use Xbgr8888 instead of Abgr8888 - treats alpha byte as "don't care"
+-                // This ensures the texture is fully opaque, avoiding any alpha blending issues
+-                let mut mem_buffer = MemoryRenderBuffer::new(
+-                    Fourcc::Xbgr8888, // RGBX in little-endian - ignores 4th byte (alpha)
+-                    (width as i32, height as i32),
+-                    1, // scale
+-                    Transform::Normal,
+-                    None,
+-                );
+-
+-                // Write pixels into buffer
+-                let pixels_clone = pixels.clone();
+-                let _: Result<(), std::convert::Infallible> = mem_buffer.render().draw(|buffer| {
+-                    buffer.copy_from_slice(&pixels_clone);
+-                    Ok(vec![Rectangle::from_size((width as i32, height as i32).into())])
+-                });
+-
+-                // Create render element
+-                let loc: smithay::utils::Point<i32, smithay::utils::Physical> = (0, 0).into();
+-                match MemoryRenderBufferRenderElement::from_buffer(
+-                    renderer,
+-                    loc.to_f64(),
+-                    &mem_buffer,
+-                    None,
+-                    None,
+-                    None,
+-                    Kind::Unspecified,
+-                ) {
+-                    Ok(slint_element) => {
+-                        // For Switcher (not during home gesture), save the element to add to switcher_elements later
+-                        // For other views (or Switcher during home gesture), add to slint_elements as normal
+-                        if shell_view == ShellView::Switcher && !switcher_home_gesture_active {
+-                            switcher_slint_element = Some(slint_element);
+-                            tracing::debug!("Slint {:?} element saved for switcher_elements", shell_view);
+-                        } else {
+-                            slint_elements.push(HomeRenderElement::Icon(slint_element));
+-                            tracing::debug!("Slint {:?} element created and pushed", shell_view);
+-                        }
+-                    }
+-                    Err(e) => {
+-                        tracing::error!("Failed to create Slint render element: {:?}", e);
+-                    }
+-                }
+-            }
++            // The external QML lock screen covers the full display. When
++            // it is present, this full-screen Slint image is never used in the
++            // LockScreen render branch below. Keep process_events above and
++            // preserve the Slint fallback and keyboard-specific render below.
++            let qml_lock_covers_slint = shell_view == ShellView::LockScreen
++                && state.shell.lock_screen_active
++                && state.space.elements().count() > 0;
++            if !qml_lock_covers_slint {
++                // Render Slint UI to pixel buffer
++                slint_ui.request_redraw();
++                let render_result = slint_ui.render();
++                tracing::debug!("Slint render result: {:?}", render_result.as_ref().map(|(w, h, _)| (*w, *h)));
++                if let Some((width, height, pixels)) = render_result {
++                    // DEBUG: Sample center pixel from Slint output
++                    let center_offset = (width * height * 2) as usize; // middle of RGBA buffer
++                    if pixels.len() > center_offset + 4 {
++                        let sample = (pixels[center_offset], pixels[center_offset+1], pixels[center_offset+2], pixels[center_offset+3]);
++                        tracing::debug!("UDEV: {:?} Slint center pixel RGBA={:?}", shell_view, sample);
++                    }
++
++                    // Create MemoryRenderBuffer from Slint's pixel output
++                    // Use Xbgr8888 instead of Abgr8888 - treats alpha byte as "don't care"
++                    // This ensures the texture is fully opaque, avoiding any alpha blending issues
++                    let mut mem_buffer = MemoryRenderBuffer::new(
++                        Fourcc::Xbgr8888, // RGBX in little-endian - ignores 4th byte (alpha)
++                        (width as i32, height as i32),
++                        1, // scale
++                        Transform::Normal,
++                        None,
++                    );
++
++                    // Write pixels into buffer
++                    let pixels_clone = pixels.clone();
++                    let _: Result<(), std::convert::Infallible> = mem_buffer.render().draw(|buffer| {
++                        buffer.copy_from_slice(&pixels_clone);
++                        Ok(vec![Rectangle::from_size((width as i32, height as i32).into())])
++                    });
++
++                    // Create render element
++                    let loc: smithay::utils::Point<i32, smithay::utils::Physical> = (0, 0).into();
++                    match MemoryRenderBufferRenderElement::from_buffer(
++                        renderer,
++                        loc.to_f64(),
++                        &mem_buffer,
++                        None,
++                        None,
++                        None,
++                        Kind::Unspecified,
++                    ) {
++                        Ok(slint_element) => {
++                            // For Switcher (not during home gesture), save the element to add to switcher_elements later
++                            // For other views (or Switcher during home gesture), add to slint_elements as normal
++                            if shell_view == ShellView::Switcher && !switcher_home_gesture_active {
++                                switcher_slint_element = Some(slint_element);
++                                tracing::debug!("Slint {:?} element saved for switcher_elements", shell_view);
++                            } else {
++                                slint_elements.push(HomeRenderElement::Icon(slint_element));
++                                tracing::debug!("Slint {:?} element created and pushed", shell_view);
++                            }
++                        }
++                        Err(e) => {
++                            tracing::error!("Failed to create Slint render element: {:?}", e);
++                        }
++                    }
++                }            }
++
+         } else {
+             tracing::warn!("slint_ui is None, cannot render {:?}", shell_view);
+         }

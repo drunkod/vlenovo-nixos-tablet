@@ -44,16 +44,17 @@ For the actual Rust package, avoiding the unrelated QML/Qt5 assets:
 ```bash
 docker --context colima-vlenovo-flick-build exec vlenovo-flick-nixbuild \
   nix --extra-experimental-features 'nix-command flakes' \
-  --option sandbox false --option max-jobs 2 --option cores 2 \
+  --option sandbox false --option filter-syscalls false \
+  --option max-jobs 2 --option cores 2 \
   build 'path:/work#packages.x86_64-linux.flick.unwrapped' \
   --no-link --print-out-paths -L
 ```
 
-An asynchronous execution was started with output redirected to `/tmp/vlenovo-flick-build.log` inside the container; the exit status is saved as `/tmp/vlenovo-flick-build.rc` when the command exits. Inspect with:
+The first attempt omitted `--option filter-syscalls false` and failed with `unable to load seccomp BPF program: Invalid argument` under Rosetta, during setup before compilation. The second attempt includes that option; it progressed into real dependency builds. **Disable syscall filtering only inside this disposable, unprivileged-for-host Docker container**, which has a read-only project mount. It is not a recommended NixOS/tablet system setting. The successful retry writes output to `/tmp/vlenovo-flick-build-retry.log` and the exit code to `/tmp/vlenovo-flick-build-retry.rc` when complete. Inspect with:
 
 ```bash
 docker --context colima-vlenovo-flick-build exec vlenovo-flick-nixbuild \
-  sh -c 'if test -f /tmp/vlenovo-flick-build.rc; then cat /tmp/vlenovo-flick-build.rc; else echo RUNNING; fi; tail -20 /tmp/vlenovo-flick-build.log; df -h /nix/store'
+  sh -c 'if test -f /tmp/vlenovo-flick-build-retry.rc; then cat /tmp/vlenovo-flick-build-retry.rc; else echo RUNNING; fi; tail -20 /tmp/vlenovo-flick-build-retry.log; df -h /nix/store'
 ```
 
 **Do not claim a built candidate until the exit status is zero and the Nix output path is verified.** Building inside the container never activates/restarts the tablet's Flick service. For deployment, preserve Nix store closures and check ABI/runtime dependencies; copying a single executable without its matching libraries is insufficient.
