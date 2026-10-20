@@ -1,0 +1,23 @@
+sample_utc=2026-10-20T21:18:10Z
+flick_unit=/etc/systemd/system/flick.service
+flick_active=active
+flick_main_pid=894
+flick_exec={ path=/nix/store/mff55q54jy9x5jifkzy5fhriqshd90ng-flick-unstable-2026-01-04/bin/flick ; argv[]=/nix/store/mff55q54jy9x5jifkzy5fhriqshd90ng-flick-unstable-2026-01-04/bin/flick ; ignore_errors=no ; start_time=[Tue 2026-10-20 16:49:59 UTC] ; stop_time=[n/a] ; pid=894 ; code=(null) ; status=0/0 }
+flick_tty=/dev/tty1
+flick_tty_reset=yes
+flick_tty_deallocate=yes
+flick_restart_policy=on-failure
+service_sshd=active
+service_NetworkManager=active
+service_seatd=active
+nixos_booted=/nix/store/91jbl1irxi6qjx0252s00mlz8ass3yin-nixos-system-vlenovo-25.05.20250708.88983d4
+nixos_current=/nix/store/91jbl1irxi6qjx0252s00mlz8ass3yin-nixos-system-vlenovo-25.05.20250708.88983d4
+touchscreen=/dev/input/event4
+staged_verified=flick-logging-x86_64:ad01f34e4576f0b8d6a8254835884758179df40923cb377564c0fc4c7dc2f7f6
+staged_verified=flick-qml-experimental-x86_64:34cf5fa26b25b88f749522a92692f9896c301d84ace73a92dec8bf96074a6e38
+staged_verified=flick-dmabuf-experimental-x86_64:a049d7b41bcd9939831a94a54e764b437d3c879127ba52670a4d943848b12b2c
+free_disk=/dev/disk/by-uuid/b938d934-0de7-49f9-b4a1-e7c9b02da5d6   50G   29G   19G  61% /
+read_only_preflight=PASS
+physical_access_confirmed=NOT_VERIFIED
+automatic_rollback_tested=NO
+compositor_restart_authorized=NO

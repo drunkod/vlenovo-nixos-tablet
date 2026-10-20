@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# Read-only physical tablet Flick compositor deployment preflight.
+# Do not turn this into an automatic activation or systemd restart script.
+set -euo pipefail
+echo "sample_utc=$(date -u +%FT%TZ)"
+echo "flick_unit=$(systemctl show flick -P FragmentPath)"
+echo "flick_active=$(systemctl is-active flick)"
+echo "flick_main_pid=$(systemctl show flick -P MainPID)"
+echo "flick_exec=$(systemctl show flick -P ExecStart)"
+echo "flick_tty=$(systemctl show flick -P TTYPath)"
+echo "flick_tty_reset=$(systemctl show flick -P TTYReset)"
+echo "flick_tty_deallocate=$(systemctl show flick -P TTYVTDisallocate)"
+echo "flick_restart_policy=$(systemctl show flick -P Restart)"
+for service in sshd NetworkManager seatd; do
+    printf 'service_%s=%s\n' "$service" "$(systemctl is-active "$service")"
+done
+booted="$(readlink -f /run/booted-system)"
+current="$(readlink -f /run/current-system)"
+echo "nixos_booted=$booted"
+echo "nixos_current=$current"
+[[ "$booted" == "$current" ]] || { echo "BLOCK: NixOS generation changed from boot" >&2; exit 1; }
+touch="$(readlink -f /dev/input/by-path/first-touchscreen)"
+echo "touchscreen=$touch"
+[[ -c "$touch" ]] || { echo "BLOCK: no character touchscreen device" >&2; exit 1; }
+# Verify stable hashes of the exact three build artifacts. No chmod, copy, or restart.
+dir=/home/alex/lenovo-mvp/builds
+while read -r digest filename; do
+    file="$dir/$filename"
+    [[ -r "$file" && -x "$file" ]] || { echo "BLOCK: missing or non-executable $file" >&2; exit 1; }
+    actual="$(sha256sum "$file" | awk '{print $1}')"
+    if [[ "$actual" != "$digest" ]]; then
+        echo "BLOCK: wrong SHA-256: $file" >&2
+        exit 1
+    fi
+    echo "staged_verified=$filename:$actual"
+done <<'HASHES'
+ad01f34e4576f0b8d6a8254835884758179df40923cb377564c0fc4c7dc2f7f6 flick-logging-x86_64
+34cf5fa26b25b88f749522a92692f9896c301d84ace73a92dec8bf96074a6e38 flick-qml-experimental-x86_64
+a049d7b41bcd9939831a94a54e764b437d3c879127ba52670a4d943848b12b2c flick-dmabuf-experimental-x86_64
+HASHES
+echo "free_disk=$(df -h / | tail -1)"
+echo "read_only_preflight=PASS"
+echo "physical_access_confirmed=NOT_VERIFIED"
+echo "automatic_rollback_tested=NO"
+echo "compositor_restart_authorized=NO"
