@@ -39,3 +39,16 @@ A further safety caveat: `shell/src/state.rs::DmabufHandler::dmabuf_imported` cu
 - Read-only shell: `wayland-info` with `XDG_RUNTIME_DIR=/run/user/1001 WAYLAND_DISPLAY=wayland-1`, `sudo cat /proc/1026/task/*/comm`, and `sudo ls /proc/1026/fd`.
 - [Qt 5 scene graph adaptations](https://qthub.com/static/doc/qt5/qtquick/qtquick-visualcanvas-adaptations.html), and [Qt Quick scene graph diagnostics](https://doc.qt.io/qt-6/qtquick-visualcanvas-scenegraph.html), specifically `QSG_INFO=1` for renderer identification.
 - [Mesa llvmpipe source for `lp_dma_buf`](https://chromium.googlesource.com/external/gitlab.freedesktop.org/mesa/mesa/+/aef497d66998e760f2fa5af9351051e1ee9443fc/src/gallium/drivers/llvmpipe/lp_texture.c).
+
+## Smithay 0.7 import validation architecture (follow-up)
+
+The Smithay 0.7 API explicitly instructs the compositor to **test DMA-BUF imports in its renderer** before calling the import notifier success; `ImportDma::import_dmabuf(&dmabuf, None)` on `GlesRenderer` can make that test. Smithay Anvil's implementation performs the import and calls `notifier.failed()` when the renderer rejects it.
+
+In this Flick revision, `GlesRenderer` is owned by `GpuData` in `backend/udev.rs`, while `DmabufHandler for Flick` is implemented in `state.rs`. The renderer is **not directly reachable** in the Wayland callback. A safe patch therefore needs a controlled renderer access/design (or a validated deferred-import mechanism); just transplanting the HWC `create_global_with_default_feedback` call is insufficient.
+
+- [Smithay 0.7 DmabufState and globals](https://smithay.github.io/smithay/smithay/wayland/dmabuf/struct.DmabufState.html)
+- [Smithay 0.7 DMA-BUF integration guidance](https://smithay.github.io/smithay/smithay/wayland/dmabuf/index.html)
+- [Smithay 0.7 ImportDma trait](https://smithay.github.io/smithay/smithay/backend/renderer/trait.ImportDma.html)
+- [Smithay Anvil import example](https://github.com/Smithay/smithay/blob/master/anvil/src/udev.rs)
+
+A repeatable read-only baseline command is `ssh -F ~/.ssh/vlenovo_config vlenovo 'bash -s' < tools/check-qt-wayland-gpu.sh`; expected results before any activation: `linux_dmabuf_wayland_global=ABSENT`, `wl_drm_wayland_global=ABSENT`, `qmlscene_llvmpipe_threads=4`, `qmlscene_render_node_fds=0`. The exact live sample was preserved at `mvp/native/benchmarks/2026-10-21-qml-llvmpipe-wayland-registry.txt`.
