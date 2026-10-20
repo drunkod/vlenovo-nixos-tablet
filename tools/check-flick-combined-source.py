@@ -58,6 +58,16 @@ with tempfile.TemporaryDirectory(prefix="flick-guard-integrity-") as work:
         "incorrect Slint skip/keyboard event ordering"
     assert 'slint_ui.render()' in u[skippage:qmlbranch], \
         "Slint rendering accidentally moved outside its guard"
+    # The QML client process is spawned before the GPU is initialised, but
+    # the Wayland event loop must NOT dispatch its registry requests until
+    # native init_gpu has advertised EGL/wl_drm. Otherwise Qt can select
+    # software once and never rediscover the hardware global.
+    first_qml_start=u.index("state.shell.launch_lock_screen_app(socket);")
+    gpu_init=u.index("match init_gpu(&mut state,")
+    first_client_dispatch=u.index("state.dispatch_clients();")
+    assert first_qml_start < gpu_init < first_client_dispatch, (
+        "EGL global may be registered after first Wayland client dispatch"
+    )
     assert u.count("bind_wl_display(&state.display_handle)") == 1
     assert '"use_system_lib"' in cargo
     assert 'renderer.import_dmabuf(&dmabuf, None)' in u
@@ -67,4 +77,5 @@ with tempfile.TemporaryDirectory(prefix="flick-guard-integrity-") as work:
     assert 'self.pending_dmabuf_imports.push((dmabuf, notifier));' in callback
     print("PASS: matching QML visibility predicates, Slint process_events and keyboard render ordering")
     print("PASS: EGL wl_drm binding, Smithay use_system_lib and real GPU DMA-BUF validation signatures")
+    print("PASS: native GPU initialization precedes initial client registry dispatch")
     print("PASS: all four ordered patches applied on reconstructed native DRM source")
