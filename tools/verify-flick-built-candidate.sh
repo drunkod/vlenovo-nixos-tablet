@@ -56,11 +56,48 @@ docker --context "$CONTEXT" exec "$CONTAINER" "$out/bin/flick" --help | head -14
 
 if [[ "$action" == "--stage" ]]; then
     test -f "$SSH_CONFIG" || { echo "Missing SSH config $SSH_CONFIG" >&2; exit 1; }
+
+    # The tablet already has the base unwrapped Flick runtime closure. Reject a
+    # new candidate that would require additional store paths before copying it.
+    known_good=/nix/store/im04hvdj3p8i7ncywpb8accldk2bnd2k-flick-unstable-2026-01-04
+    new_refs="$(mktemp)"
+    known_refs="$(mktemp)"
+    trap 'rm -f "$new_refs" "$known_refs"' EXIT
+    docker --context "$CONTEXT" exec "$CONTAINER" nix-store -q --references "$out" | sort > "$new_refs"
+    ssh -F "$SSH_CONFIG" -o BatchMode=yes vlenovo \
+        "nix-store -q --references '$known_good'" | sort > "$known_refs"
+    if ! diff -u "$known_refs" "$new_refs"; then
+        echo "Runtime Nix store references differ; closure transfer/review required" >&2
+        exit 1
+    fi
+    echo "tablet_runtime_refs=MATCH_KNOWN_GOOD"
     ssh -F "$SSH_CONFIG" -o BatchMode=yes vlenovo "mkdir -p '$TABLET_STAGE'"
-    scp -q -F "$SSH_CONFIG" "$local_bin" "vlenovo:$TABLET_STAGE/$name"
-    tablet_sha="$(ssh -F "$SSH_CONFIG" -o BatchMode=yes vlenovo "sha256sum '$TABLET_STAGE/$name'" | awk '{print $1}')"
+    # A prior staging copy can be read-only. Avoid overwriting its inode and
+    # upload to an unprivileged temporary file only when content differs.
+    tablet_sha="$(ssh -F "$SSH_CONFIG" -o BatchMode=yes vlenovo \
+        "test -f '$TABLET_STAGE/$name' && sha256sum '$TABLET_STAGE/$name' || true" | awk '{print $1}')"
     if [[ "$tablet_sha" != "$sha" ]]; then
-        echo "ERROR: tablet SHA-256 mismatch" >&2
+        remote_tmp="$(ssh -F "$SSH_CONFIG" -o BatchMode=yes vlenovo \
+            "mktemp '$TABLET_STAGE/.$name.XXXXXXXX'")"
+        if ! scp -q -F "$SSH_CONFIG" "$local_bin" "vlenovo:$remote_tmp"; then
+            ssh -F "$SSH_CONFIG" -o BatchMode=yes vlenovo "rm -f '$remote_tmp'"
+            echo "Failed to upload staged candidate" >&2
+            exit 1
+        fi
+        tmp_sha="$(ssh -F "$SSH_CONFIG" -o BatchMode=yes vlenovo \
+            "sha256sum '$remote_tmp'" | awk '{print $1}')"
+        if [[ "$tmp_sha" != "$sha" ]]; then
+            ssh -F "$SSH_CONFIG" -o BatchMode=yes vlenovo "rm -f '$remote_tmp'"
+            echo "ERROR: tablet temporary file SHA-256 mismatch" >&2
+            exit 1
+        fi
+        ssh -F "$SSH_CONFIG" -o BatchMode=yes vlenovo \
+            "chmod 755 '$remote_tmp' && mv -f '$remote_tmp' '$TABLET_STAGE/$name'"
+        tablet_sha="$(ssh -F "$SSH_CONFIG" -o BatchMode=yes vlenovo \
+            "sha256sum '$TABLET_STAGE/$name'" | awk '{print $1}')"
+    fi
+    if [[ "$tablet_sha" != "$sha" ]]; then
+        echo "ERROR: staged binary SHA-256 mismatch" >&2
         exit 1
     fi
     echo "tablet_sha256=$tablet_sha"
