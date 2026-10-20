@@ -24,3 +24,8 @@ Source:
 - https://smithay.github.io/smithay/smithay/backend/renderer/gles/struct.GlesRenderer.html
 
 Build on dedicated x86 Linux Mac VM, verify ELF closure and smoke test, stage without activation. System service rollback and physical recovery must be reliable before live display testing.
+
+
+## Build and staging confirmation
+
+The isolated fourth Nix build completed successfully with Rust release compilation in 22 min 50 sec and Nix exit code 0. Store output: /nix/store/rr2di3xjbmks5x8cin33wslbxs2n121z-flick-unstable-2026-01-04. Binary SHA-256: 361d97fcda198e202540298a23455496cabbaaf70a825a58ae85747b11a72f04. The full source-signature, ELF, store-path, direct runtime-library reference equality, Mac and tablet --help, upload checksum and essential-service checks passed. The binary was **staged, not activated** at /home/alex/lenovo-mvp/builds/flick-qt-egl-experimental-x86_64. For full reproducibility and limitations see FLICK_QT_EGL_BUILD_RESULT_2026-10-21.md.
