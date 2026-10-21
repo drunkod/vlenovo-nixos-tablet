@@ -61,7 +61,7 @@
         } // (if direct then {
           LIBSEAT_BACKEND = "seatd";
           SLINT_DRM_OUTPUT = "DSI-1";
-          LD_LIBRARY_PATH = "/run/opengl-driver/lib";
+          LD_LIBRARY_PATH = "${pkgs.lib.makeLibraryPath [ pkgs.libglvnd pkgs.libgbm ]}:/run/opengl-driver/lib";
           LIBGL_DRIVERS_PATH = "/run/opengl-driver/lib/dri";
           GBM_BACKENDS_PATH = "/run/opengl-driver/lib/gbm";
           MESA_LOADER_DRIVER_OVERRIDE = "crocus";
@@ -92,6 +92,7 @@
         services.flick.enable = lib.mkForce (!direct);
         services.flick.autostart = lib.mkForce (!direct);
         services.seatd.enable = lib.mkForce true;
+        users.users.alex.extraGroups = lib.mkAfter [ "seat" ];
         fonts.fontconfig.enable = true;
         systemd.services.lenovo-slint-dashboard = mkService app direct renderer;
         # Keep kernel/i915, touchscreen udev/ACPI, SSH, Wi-Fi, and GRUB IA32.
