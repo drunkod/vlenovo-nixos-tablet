@@ -13,6 +13,16 @@ static gboolean stop_signal(gpointer data) {
   g_main_loop_quit((GMainLoop *)data);
   return G_SOURCE_REMOVE;
 }
+static void on_load_changed(WebKitWebView *view, WebKitLoadEvent event, gpointer ignored) {
+  if (event == WEBKIT_LOAD_FINISHED)
+    fprintf(stderr, "WPE Gen59: page loaded: %s\n", webkit_web_view_get_uri(view));
+}
+static gboolean on_load_failed(WebKitWebView *view, WebKitLoadEvent event,
+                                const char *uri, GError *error, gpointer ignored) {
+  fprintf(stderr, "WPE Gen59: page load FAILED: %s: %s\n",
+          uri ? uri : "(null)", error ? error->message : "(unspecified)");
+  return FALSE;
+}
 int main(int argc, char **argv) {
   const char *uri = argc > 1 ? argv[1] : "http://127.0.0.1:17858/viewer";
   g_autoptr(GMainLoop) loop = g_main_loop_new(NULL, FALSE);
@@ -21,7 +31,9 @@ int main(int argc, char **argv) {
     fprintf(stderr,"WPE: failed to construct WebKitWebView\n");
     return EXIT_FAILURE;
   }
-  // No untrusted URL navigation: the runtime always loads our local scene.
+  // The runtime always starts from the local trusted scene.
+  g_signal_connect(view, "load-changed", G_CALLBACK(on_load_changed), NULL);
+  g_signal_connect(view, "load-failed", G_CALLBACK(on_load_failed), NULL);
   g_unix_signal_add(SIGINT, stop_signal, loop);
   g_unix_signal_add(SIGTERM, stop_signal, loop);
   fprintf(stderr, "WPE Gen59: initializing %s (WPE_PLATFORM=%s)\n",
