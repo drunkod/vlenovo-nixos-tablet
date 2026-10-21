@@ -40,6 +40,24 @@ a049d7b41bcd9939831a94a54e764b437d3c879127ba52670a4d943848b12b2c flick-dmabuf-ex
 361d97fcda198e202540298a23455496cabbaaf70a825a58ae85747b11a72f04 flick-qt-egl-experimental-x86_64
 4c0d8a75d70f727092522cc82941f12d6421b1b0c44b26e0f7a1a4cbe054006d flick-qt-egl-qml-experimental-x86_64
 HASHES
+# The Nix-packaged original adds FLICK_ROOT and graphics ABI search paths.
+# Candidate wrappers must be pinned too: an ELF hash match alone is NOT
+# sufficient to run Flick with the same runtime libraries as the installed
+# service. Verify the exact five user-owned, inactive staging launchers.
+while read -r digest name; do
+    f="$dir/$name"
+    [[ -f "$f" && -x "$f" && ! -L "$f" ]] || { echo "BLOCK: missing, non-executable or symlink launcher $f" >&2; exit 1; }
+    actual="$(sha256sum "$f" | awk '{print $1}')"
+    [[ "$actual" == "$digest" ]] || { echo "BLOCK: modified launcher $name" >&2; exit 1; }
+    bash -n "$f"
+    echo "launcher_verified=$name:$actual"
+done <<'WRAPPERS'
+ad3b31e1baaa21d2087140f53fcf88c66f8391041baf0ff0b43d10a392914989 .launch-flick-logging-experimental
+5a45a580b0f98623fa88fb76c9343be3b10cd60ebbf5531c731c6353652bb37e .launch-flick-qml-experimental
+44a0a028b18513131ad538145d9c4f025ca6c1e995b702bdaad4bd765ffa1077 .launch-flick-dmabuf-experimental
+3a5091a4be2b48814526dea0c4e0e72aaade46315422ef1024e61ac17b338776 .launch-flick-qt-egl-experimental
+03c4d9c73be4475648feae827d53a31f55d7893c399dd0e99be661448c430e22 .launch-flick-qt-egl-qml-experimental
+WRAPPERS
 echo "free_disk=$(df -h / | tail -1)"
 echo "read_only_preflight=PASS"
 echo "physical_access_confirmed=NOT_VERIFIED"
