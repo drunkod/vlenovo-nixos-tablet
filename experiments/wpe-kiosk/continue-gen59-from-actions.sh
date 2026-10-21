@@ -5,9 +5,10 @@ set -euo pipefail
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$DIR/../.." && pwd)"
 GIT_COMMON="$(git -C "$ROOT" rev-parse --path-format=absolute --git-common-dir)"
-ARCHIVE="$(dirname "$GIT_COMMON")/.local/archives/gen59-wpe-ci-39616428062"
+RUN="${GEN59_WPE_CI_RUN:-39644717396}"
+ARCHIVE="$(dirname "$GIT_COMMON")/.local/archives/gen59-wpe-ci-${RUN}"
 REPO=drunkod/vlenovo-nixos-tablet
-RUN=39616428062
+EXPECTED_PATCHED_SHA=d7dc855e938b8299b3f825ce56b959fd800b4209
 DOCKER_CONTEXT=colima-vlenovo-flick-build
 BUILDER=vlenovo-flick-nixbuild
 FLAKE=path:/nextgen59-wpe
@@ -28,6 +29,9 @@ check_gen58() {
 fetch() {
   mkdir -p "$ARCHIVE"
   gh run view "$RUN" -R "$REPO" --json conclusion --jq '.conclusion' | grep -Fx success
+  test "$(gh run view "$RUN" -R "$REPO" --json headSha --jq '.headSha')" = "$EXPECTED_PATCHED_SHA" || {
+    echo "SAFETY STOP: CI build is not the reviewed sandbox-patched commit" >&2; exit 1;
+  }
   gh run download "$RUN" -R "$REPO" --name gen59-wpe2541-nix-outputs --dir "$ARCHIVE"
   (cd "$ARCHIVE" && shasum -a 256 -c wpe-outputs.sha256)
   zstd -t "$ARCHIVE/wpe-outputs.nar.zst"
