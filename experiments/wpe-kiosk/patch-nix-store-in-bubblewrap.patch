@@ -1,0 +1,12 @@
+--- a/Source/WebKit/UIProcess/Launcher/glib/BubblewrapLauncher.cpp
++++ b/Source/WebKit/UIProcess/Launcher/glib/BubblewrapLauncher.cpp
+@@ -805,6 +805,9 @@
+         // We assume /etc has safe permissions.
+         // At a later point we can start masking privacy-concerning files.
+         "--ro-bind", "/etc", "/etc",
++        // NixOS: WebKit child processes and D-Bus proxy use immutable
++        // interpreters and libraries in /nix/store. Mount read-only.
++        "--ro-bind-try", "/nix/store", "/nix/store",
+         "--dev", "/dev",
+         "--proc", "/proc",
+         "--tmpfs", "/tmp",

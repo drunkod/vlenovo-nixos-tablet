@@ -21,6 +21,9 @@
         # documentation. A missing devdoc would fail the Nix build at the end.
         outputs = [ "out" "dev" ];
         postFixup = "";
+        # WPE 2.54 Linux sandbox assumes standard /lib and /usr paths. On NixOS,
+        # even xdg-dbus-proxy needs a dynamic loader from the immutable Nix store.
+        patches = (prev.patches or []) ++ [ ./patch-nix-store-in-bubblewrap.patch ];
         src = pkgsWeb.fetchurl {
           url = "https://wpewebkit.org/releases/wpewebkit-2.54.1.tar.xz";
           hash = "sha256-Dei9+6AR+c1jupqRcfpgON0sCCN4lPQIKru4IfKdP+k=";
@@ -132,6 +135,10 @@
             RestartSec = 5;
             MemoryHigh = "800M";
             MemoryMax = "950M";
+            # PAM login grants CAP_WAKE_ALARM, which bubblewrap refuses.
+            # This service does not need privileges; drop the capability.
+            CapabilityBoundingSet = "~CAP_WAKE_ALARM";
+            NoNewPrivileges = true;
             PAMName = "login";
             TTYPath = "/dev/tty1";
             StandardInput = "tty-fail";

@@ -9,6 +9,8 @@ on:
       - ".github/workflows/gen59-wpe-x86-build.yml"
       - "experiments/wpe-kiosk/flake.nix"
       - "experiments/wpe-kiosk/flake.lock"
+      - "experiments/wpe-kiosk/patch-nix-store-in-bubblewrap.patch"
+      - "experiments/wpe-kiosk/kiosk.c"
 
 permissions:
   contents: read
