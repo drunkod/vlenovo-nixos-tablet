@@ -1,0 +1,18 @@
+BdsDxe: starting Boot0001 "UEFI Misc Device" from PciRoot(0x0)/Pci(0x2,0x0)
+[EFI stub] Loaded with offset 0x6cfae000
+[EFI stub] Loading the cmdline
+[EFI stub] Loaded the cmdline: "BOOT_IMAGE=(hd0,gpt1)//kernels/z957vwzff85aa2cgm9g40k3cyyn2lflp-asterinas-osdk-bin init=/nix/store/i67kmwzzvsnc7diw15y7y9qpa5qh4n8j-nixos-system-asterinas-26.05pre-git/init PATH=/bin:/nix/var/nix/profiles/system/sw/bin earlycon loglevel=error console=hvc0 systemd.getty_auto=no -- root=/dev/vda2 init=/nix/var/nix/profiles/system/init rd.break=0"
+[EFI stub] Loading the initrd
+[EFI stub] Loaded the initrd: addr=0x6c317000, size=0xd959eb
+[EFI stub] Found the ACPI RSDP at 0x6fb7e014
+[EFI stub] Found the framebuffer at 0x80000000 with 1280x800 pixels
+[EFI stub] Decoding the kernel payload
+[EFI stub] Loading the payload as an ELF file
+[EFI stub] Exiting EFI boot services
+[EFI stub] Processing 134 memory map entries
+[EFI stub] Entering the Asterinas entry point at 0x8001200
+OSTD initialized. Preparing components.
+Spawn the first kernel thread
+[kernel] unpacking initramfs.cpio.gz to rootfs ...
+[kernel] initramfs is ready
+[kernel] running /init as the init process
