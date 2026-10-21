@@ -1,0 +1,10 @@
+verified_utc=2026-10-21T04:42:19Z
+new_immutable_system_package=/nix/store/k7rf872zph2192khxyrvx7fgzj40fl1r-flick-qt-egl-qml-system
+new_compiled_binary_sha256=4c0d8a75d70f727092522cc82941f12d6421b1b0c44b26e0f7a1a4cbe054006d
+nix_store_closure_paths=282
+closure_differences_only_two_flick_paths=PASS
+qml_assets_and_graphics_libraries_identical=PASS
+gc_root=/home/alex/lenovo-mvp/builds/.flick-qt-egl-qml-system-gcroot
+original_flick_pid=18715
+active_system_generation_unchanged=YES
+immutable_package_readonly_verification=PASS
