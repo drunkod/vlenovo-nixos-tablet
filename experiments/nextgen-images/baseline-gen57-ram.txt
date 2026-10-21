@@ -1,0 +1,42 @@
+=== system ===
+Wed Oct 21 06:19:52 AM UTC 2026
+x86_64
+/nix/store/14drwqmla8jzr9iinsj4an1shb704xd2-nixos-system-vlenovo-25.05.20250708.88983d4
+               total        used        free      shared  buff/cache   available
+Mem:            1866         559        1046          57         457        1307
+Swap:           8560           0        8560
+=== processes ===
+    PID COMMAND           RSS %CPU
+    899 .flick-wrapped  173256 79.1
+   2912 nix-daemon      31196  0.0
+    778 NetworkManager  22068  0.2
+      1 systemd         14716  0.2
+    390 systemd-journal 14664  0.0
+    919 pulseaudio      12488  0.2
+    870 systemd         12448  0.0
+    876 wpa_supplicant  11468  0.0
+    435 systemd-udevd   10232  0.0
+   1010 upowerd         10176  0.0
+   2836 sshd-session     9960  0.0
+    739 systemd-logind   9032  0.0
+    926 polkitd          8592  0.0
+   1002 .gsettings-help  8312  0.0
+    431 systemd-timesyn  8276  0.0
+    866 sshd             7508  0.0
+    392 systemd-oomd     7308  0.0
+=== selected process proportional/private memory ===
+PID=899
+Rss:              158900 kB
+Pss:              153545 kB
+Private_Clean:     61172 kB
+Private_Dirty:     90708 kB
+Swap:                  0 kB
+=== service and hardware gates ===
+active
+active
+active
+active
+lrwxrwxrwx 1 root root 9 Oct 21 05:45 /dev/input/by-path/first-touchscreen -> ../event5
+D0
+=== i915 errors ===
+Oct 21 05:45:20 vlenovo kernel: i915 0000:00:02.0: [drm] *ERROR* Failed to own gpio for panel control

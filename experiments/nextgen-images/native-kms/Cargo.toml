@@ -1,0 +1,17 @@
+[package]
+name = "lenovo-native-mvp"
+version = "0.1.0"
+edition = "2021"
+description = "Read-only Slint touch dashboard for the Lenovo Miix 2 10"
+license = "MIT"
+
+[dependencies]
+slint = { version = "=1.7.2", default-features = false, features = ["compat-1-2", "std", "renderer-software", "backend-linuxkms"] }
+
+[profile.dev]
+debug = 0
+incremental = false
+opt-level = 0
+
+[features]
+gpu = ["slint/renderer-femtovg"]
