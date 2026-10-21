@@ -1,0 +1,37 @@
+Running timer as unit: vlenovo-lowram-restore.timer
+Will run service as unit: vlenovo-lowram-restore.service
+TRIAL_PID=2072
+Rss:               80680 kB
+Pss:               76159 kB
+Pss_Anon:          25260 kB
+Pss_File:          50899 kB
+Private_Dirty:     25260 kB
+Swap:                  0 kB
+    PID     ELAPSED %CPU   RSS
+   2072       00:08  8.8 80344
+drm-driver:	i915
+drm-total-system0:	30212 KiB
+TRIAL_MEM_AVAILABLE_MIB=1487
+TRIAL_21S
+Rss:               80680 kB
+Pss:               76158 kB
+Pss_Anon:          25260 kB
+Pss_File:          50898 kB
+Private_Dirty:     25260 kB
+drm-driver:	i915
+drm-total-system0:	40508 KiB
+TRIAL_27S
+Rss:               80680 kB
+Pss:               76159 kB
+Pss_Anon:          25260 kB
+Pss_File:          50899 kB
+Private_Dirty:     25260 kB
+drm-driver:	i915
+drm-total-system0:	40548 KiB
+APP_TIMEOUT_RC=124
+Using FemtoVG OpenGL renderer
+Rendering at 1920x1200
+MainPID=2115
+NRestarts=0
+ActiveState=active
+RESTORED_GEN58

@@ -249,7 +249,7 @@ fn main() -> Result<(), slint::PlatformError> {
     });
     let timer = slint::Timer::default();
     let weak = ui.as_weak();
-    timer.start(slint::TimerMode::Repeated, Duration::from_secs(3), move || {
+    timer.start(slint::TimerMode::Repeated, Duration::from_secs(12), move || {
         if let Some(ui) = weak.upgrade() { refresh(&ui); }
     });
     ui.run()
