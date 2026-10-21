@@ -1,0 +1,25 @@
+sample_utc=2026-10-21T04:14:05Z
+interface: 'wl_compositor',                              version:  5, name:  1
+interface: 'wl_subcompositor',                           version:  1, name:  2
+interface: 'xdg_wm_base',                                version:  6, name:  3
+interface: 'wl_shm',                                     version:  2, name:  4
+interface: 'zxdg_output_manager_v1',                     version:  3, name:  5
+interface: 'wl_data_device_manager',                     version:  3, name:  6
+interface: 'zwp_text_input_manager_v3',                  version:  1, name:  7
+interface: 'android_wlegl',                              version:  2, name:  8
+interface: 'wl_seat',                                    version:  9, name:  9
+interface: 'wl_drm',                                     version:  2, name: 10
+interface: 'zwp_linux_dmabuf_v1',                        version:  5, name: 11
+interface: 'wl_output',                                  version:  4, name: 12
+linux_dmabuf_wayland_global=PRESENT
+wl_drm_wayland_global=PRESENT
+qmlscene_pid=15388
+    PID USER       RSS %CPU     ELAPSED COMMAND
+  15388 alex     128936 9.6       00:26 qmlscene
+qmlscene_llvmpipe_threads=0
+qmlscene_render_node_fds=4
+render_node_permissions=666 root:render
+service_flick=active
+service_sshd=active
+service_NetworkManager=active
+service_seatd=active
