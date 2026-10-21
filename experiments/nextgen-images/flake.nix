@@ -8,8 +8,9 @@
       flake = false;
     };
     nixpkgs.url = "github:NixOS/nixpkgs/88983d4b665fb491861005137ce2b11a9f89f203";
+    rustNixpkgs.url = "github:NixOS/nixpkgs/a7868a727837f3c09cee2ce0ca671c76b1589fed";
   };
-  outputs = { self, goldenSystem, integration, goldenSource, nixpkgs, ... }:
+  outputs = { self, goldenSystem, integration, goldenSource, nixpkgs, rustNixpkgs, ... }:
     let
       system = "x86_64-linux";
       pkgs = import nixpkgs {
@@ -18,9 +19,14 @@
       };
       base = goldenSystem.nixosConfigurations.vlenovo;
       baseDirect = integration.nixosConfigurations.vlenovo;
+      rustPkgs = import rustNixpkgs { inherit system; };
+      rustPlatform = pkgs.makeRustPlatform {
+        rustc = rustPkgs.rustc;
+        cargo = rustPkgs.cargo;
+      };
       nativeDir = goldenSource + "/mvp/native";
       mkNative = { src, features ? [ ], gpu ? false }:
-        pkgs.rustPlatform.buildRustPackage {
+        rustPlatform.buildRustPackage {
           pname = if gpu then "lenovo-slint-kms-gpu" else "lenovo-slint-dashboard";
           version = "0.1.0";
           inherit src;
