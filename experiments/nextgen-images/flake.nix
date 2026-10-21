@@ -35,13 +35,13 @@
           nativeBuildInputs = with pkgs; [ pkg-config makeWrapper ];
           buildInputs = with pkgs; [
             fontconfig freetype libxkbcommon wayland libinput seatd
-            libdrm mesa udev
+            libdrm libgbm mesa udev
           ];
           # Slint 1.7.2 loads fontconfig dynamically, keep it in system closure.
           postFixup = ''
             wrapProgram $out/bin/lenovo-native-mvp \
               --set FONTCONFIG_FILE /etc/fonts/fonts.conf \
-              --prefix LD_LIBRARY_PATH : "${pkgs.lib.makeLibraryPath (with pkgs; [ fontconfig freetype wayland libxkbcommon libinput seatd libdrm mesa ])}"
+              --prefix LD_LIBRARY_PATH : "${pkgs.lib.makeLibraryPath (with pkgs; [ fontconfig freetype wayland libxkbcommon libinput seatd libdrm libgbm mesa ])}"
           '';
         };
       waylandApp = mkNative { src = nativeDir; };
@@ -50,8 +50,9 @@
       mkService = app: direct: renderer: {
         description = "Lenovo Rust Slint dashboard (experimental)";
         wantedBy = [ "multi-user.target" ];
-        after = if direct then [ "seatd.service" "systemd-udev-settle.service" ] else [ "flick.service" ];
+        after = if direct then [ "systemd-user-sessions.service" "seatd.service" "NetworkManager.service" ] else [ "flick.service" ];
         requires = if direct then [ "seatd.service" ] else [ "flick.service" ];
+        conflicts = if direct then [ "getty@tty1.service" "sxmo.service" "flick.service" ] else [ ];
         environment = {
           SLINT_BACKEND = renderer;
           FONTCONFIG_FILE = "/etc/fonts/fonts.conf";
@@ -60,6 +61,10 @@
         } // (if direct then {
           LIBSEAT_BACKEND = "seatd";
           SLINT_DRM_OUTPUT = "DSI-1";
+          LD_LIBRARY_PATH = "/run/opengl-driver/lib";
+          LIBGL_DRIVERS_PATH = "/run/opengl-driver/lib/dri";
+          GBM_BACKENDS_PATH = "/run/opengl-driver/lib/gbm";
+          MESA_LOADER_DRIVER_OVERRIDE = "crocus";
         } else {
           XDG_RUNTIME_DIR = "/run/user/1001";
           WAYLAND_DISPLAY = "wayland-1";
@@ -71,11 +76,16 @@
           ExecStart = "${app}/bin/lenovo-native-mvp";
           Restart = "on-failure";
           RestartSec = 5;
-          SupplementaryGroups = [ "input" "video" "seat" ];
+          SupplementaryGroups = [ "input" "video" "seat" "audio" ];
         } // (if direct then {
           PAMName = "login";
           TTYPath = "/dev/tty1";
-          StandardInput = "tty";
+          StandardInput = "tty-fail";
+          TTYReset = true;
+          TTYVHangup = true;
+          TTYVTDisallocate = true;
+          StandardOutput = "journal";
+          StandardError = "journal";
         } else { });
       };
       moduleFor = { app, direct, renderer }: { lib, ... }: {
