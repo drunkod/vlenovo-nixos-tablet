@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Living Object — remotely controlled direct-KMS web prototype</title>
+<style>
+:root {color-scheme:dark; font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+* {box-sizing:border-box} body{margin:0;background:#080f23;color:#f0f7ff;overscroll-behavior:none}
+canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}
+.panel{position:fixed;top:clamp(12px,3vw,32px);left:clamp(12px,3vw,32px);max-width:min(450px,calc(100vw - 24px));padding:22px;background:rgba(11,22,42,.67);border:1px solid rgba(180,227,255,.23);border-radius:24px;backdrop-filter:blur(15px);pointer-events:none}
+.eyebrow{letter-spacing:.18em;color:#a4d9fc;font-size:11px;font-weight:750}
+h1{font-size:clamp(23px,4vw,38px);letter-spacing:-.05em;line-height:1.07;margin:10px 0 13px}
+p{color:#bbcbdf;line-height:1.5;font-size:14px;margin:0}
+.controls{position:fixed;bottom:clamp(12px,3vw,30px);left:50%;transform:translateX(-50%);display:flex;gap:8px;background:rgba(10,20,40,.75);padding:9px;border-radius:100px;border:1px solid rgba(161,222,255,.19);max-width:calc(100vw - 16px);overflow:auto}
+button{border:0;color:#d1deea;background:rgba(255,255,255,.08);border-radius:100px;min-width:72px;padding:11px 14px;white-space:nowrap;font-weight:650;cursor:pointer}
+button.active{background:linear-gradient(120deg,#44d9d2,#8ecdfd);color:#0a1831}
+.stat{position:fixed;right:20px;top:23px;font-size:11px;letter-spacing:.08em;color:#a8c2d9;opacity:.8}
+@media(max-width:680px){.panel{max-width:calc(100% - 24px);padding:15px}.stat{top:auto;bottom:84px}h1{font-size:24px}}
+@media(prefers-reduced-motion:reduce){.motion-note:after{content:" · reduced-motion preference respected"}}
+</style></head><body>
+<canvas id="scene" aria-label="Animated reactive object, touch anywhere to interact"></canvas>
+<div class="panel"><div class="eyebrow">RUST-TABLET DESIGN LAB • REMOTE-CONTROLLABLE</div>
+<h1>One small object.<br>An entire interface.</h1>
+<p>Move a finger or mouse to attract the living shape; tap to send an energy ripple. Use the modes below. Open /controller on your Mac or phone to change my mood remotely. This prototype uses no cloud service and still responds immediately to touch.</p></div>
+<div class="stat" id="stat" aria-live="off">READY</div><div class="panel" style="top:auto;bottom:100px;max-width:370px" id="remote-label">Awaiting remote connection</div>
+<div class="controls" aria-label="Animation style"><button data-mode="breathe" class="active">Breathe</button><button data-mode="orbit">Orbit</button><button data-mode="tide">Tide</button><button id="pause">Pause</button></div>
+<script>
+(()=>{"use strict";
+const canvas=document.getElementById("scene"),g=canvas.getContext("2d",{alpha:false}),stat=document.getElementById("stat");
+let w=100,h=100,dpr=1,last=0,elapsed=0,mode="breathe",paused=false,energy=.2,pointer={x:0,y:0,active:false},ripples=[];
+const TAU=Math.PI*2, reduced=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
+let remoteSeq=0, remoteHue=0;
+const remoteLabel=document.getElementById("remote-label");
+function setLivingScene(s) {
+  if(s.mode && ["breathe","orbit","tide"].includes(s.mode)) mode=s.mode;
+  if(typeof s.energy==="number") energy=Math.max(0,Math.min(2,s.energy));
+  if(Number.isInteger(s.hue)) remoteHue=Math.max(-180,Math.min(180,s.hue));
+  canvas.style.filter="hue-rotate("+remoteHue+"deg)";
+  if(typeof s.label==="string") remoteLabel.textContent=s.label.slice(0,80);
+  if(s.pulse===true) ripples.push({x:w*.5,y:h*.54,t:elapsed});
+  document.querySelectorAll("[data-mode]").forEach(b=>b.classList.toggle("active", b.dataset.mode===mode));
+  return {mode,hue:remoteHue,energy};
+}
+try {
+  const source=new EventSource("/api/stream");
+  source.onmessage=e=>{
+    try {
+      const s=JSON.parse(e.data);
+      if(s.seq<=remoteSeq) return;
+      remoteSeq=s.seq;
+      setLivingScene(s);
+    } catch(err) {console.warn("Bad scene update:",err);}
+  };
+  source.onerror=()=>{remoteLabel.textContent="Reconnecting to the tablet controller…";};
+} catch(err) { remoteLabel.textContent="Offline local animation"; }
+// W3C WebMCP draft: this is optional; WPE may not implement it.
+// ModelContext tool callbacks reuse exactly the same scene reducer used by SSE.
+if(document.modelContext && typeof document.modelContext.registerTool==="function"){
+  document.modelContext.registerTool({
+    name:"set_living_scene", title:"Change tablet animation",
+    description:"Set the visible living orb's mode, hue and energy in the tablet's current page.",
+    inputSchema:{type:"object",properties:{
+      mode:{type:"string",enum:["breathe","orbit","tide"]},
+      hue:{type:"integer",minimum:-180,maximum:180},
+      energy:{type:"number",minimum:0,maximum:2},
+      label:{type:"string",maxLength:80}
+    },additionalProperties:false},
+    async execute(input){return {content:[{type:"text",text:JSON.stringify(setLivingScene(input))}]};}
+  }).catch(console.warn);
+  document.modelContext.registerTool({
+    name:"pulse_living_object",title:"Pulse tablet living object",
+    description:"Trigger an energy ripple on the local tablet animation.",
+    inputSchema:{type:"object",properties:{},additionalProperties:false},
+    async execute(){return {content:[{type:"text",text:JSON.stringify(setLivingScene({pulse:true,energy:1.3}))}]};}
+  }).catch(console.warn);
+}
+
+function resize(){dpr=Math.min(window.devicePixelRatio||1,1);w=window.innerWidth;h=window.innerHeight;canvas.width=Math.ceil(w*dpr);canvas.height=Math.ceil(h*dpr);g.setTransform(dpr,0,0,dpr,0,0)}
+function hit(x,y){pointer.x=x;pointer.y=y;pointer.active=true}
+canvas.addEventListener("pointermove",e=>hit(e.clientX,e.clientY),{passive:true});
+canvas.addEventListener("pointerdown",e=>{hit(e.clientX,e.clientY);energy=Math.min(2.0,energy+.7);ripples.push({x:e.clientX,y:e.clientY,t:elapsed})},{passive:true});
+canvas.addEventListener("pointerleave",()=>{pointer.active=false});
+document.querySelectorAll("[data-mode]").forEach(b=>b.addEventListener("click",()=>{mode=b.dataset.mode;document.querySelectorAll("[data-mode]").forEach(a=>a.classList.toggle("active",a===b))}));
+function updatePause(){document.getElementById("pause").textContent=paused?"Play":"Pause";} document.getElementById("pause").addEventListener("click",()=>{paused=!paused;updatePause();if(!paused)requestAnimationFrame(frame)});
+window.addEventListener("keydown",e=>{if(e.key===" "){e.preventDefault();paused=!paused;updatePause();if(!paused)requestAnimationFrame(frame)}});
+window.addEventListener("resize",resize);resize();
+function sphere(x,y,r,time){
+  const bloom=g.createRadialGradient(x-r*.3,y-r*.38,1,x,y,r*1.26);
+  bloom.addColorStop(0,"#c8fbfc");bloom.addColorStop(.24,"#65e6e0");bloom.addColorStop(.57,mode==="tide"?"#627af0":"#1f8dd0");bloom.addColorStop(1,"rgba(31,45,156,0)");
+  g.save();g.shadowColor="#2bc9e6";g.shadowBlur=r*.65;g.fillStyle=bloom;g.beginPath();
+  for(let i=0;i<=240;i++){
+    const a=i/240*TAU,s1=Math.sin(a*5-time*1.7),s2=Math.cos(a*9+time*2.1),fluct=(mode==="tide"?.14:mode==="orbit"?.055:.085);
+    const radius=r*(.89+fluct*s1+.027*s2+energy*.045*Math.sin(a*7+time*7));
+    const xx=x+Math.cos(a)*radius,yy=y+Math.sin(a)*radius;
+    if(i===0)g.moveTo(xx,yy);else g.lineTo(xx,yy);
+  }
+  g.closePath();g.fill();g.restore();
+  const shine=g.createRadialGradient(x-r*.3,y-r*.36,0,x-r*.15,y-r*.17,r*.8);
+  shine.addColorStop(0,"rgba(255,255,255,.72)");shine.addColorStop(1,"rgba(255,255,255,0)");
+  g.fillStyle=shine;g.beginPath();g.arc(x,y,r*.89,0,TAU);g.fill();
+}
+function draw(t){
+  const bg=g.createLinearGradient(0,0,w,h);bg.addColorStop(0,"#07162c");bg.addColorStop(.6,"#09152a");bg.addColorStop(1,"#1b1437");g.fillStyle=bg;g.fillRect(0,0,w,h);
+  const cx=w*.5+(pointer.active?(pointer.x-w*.5)*.12:0),cy=h*.54+(pointer.active?(pointer.y-h*.5)*.13:0);
+  const r=Math.min(w,h)*.17*(1+.07*Math.sin(t*1.25));
+  const glow=g.createRadialGradient(cx,cy,0,cx,cy,r*2.8);glow.addColorStop(0,"rgba(21,137,181,.23)");glow.addColorStop(1,"rgba(18,80,117,0)");g.fillStyle=glow;g.fillRect(cx-r*3,cy-r*3,r*6,r*6);
+  for(let i=0;i<60;i++){
+    const a=i*2.399963229728653+((mode==="orbit")?t*.17:0),dist=r*1.55+((i*57)%101)/100*r*1.6;
+    const px=cx+Math.cos(a)*dist,py=cy+Math.sin(a)*dist;
+    const v=.25+.5*(.5+.5*Math.sin(t*.8+i*2.1));
+    g.fillStyle="rgba(155,224,255,"+v.toFixed(3)+")";g.beginPath();g.arc(px,py,i%13===0?2.2:1,0,TAU);g.fill();
+  }
+  if(mode==="orbit"){
+    g.lineWidth=1;g.strokeStyle="rgba(108,221,241,.33)";
+    g.save();g.translate(cx,cy);g.rotate(t*.13);g.scale(1,.48);g.beginPath();g.ellipse(0,0,r*1.65,r*1.65,0,0,TAU);g.stroke();g.restore();
+  }
+  sphere(cx,cy,r,t);
+  ripples=ripples.filter(q=>elapsed-q.t<2.5);
+  ripples.forEach(q=>{let age=elapsed-q.t;g.strokeStyle="rgba(93,226,251,"+(0.46*(1-age/2.5))+")";g.lineWidth=2;g.beginPath();g.arc(q.x,q.y,20+age*125,0,TAU);g.stroke()});
+  if(pointer.active){g.strokeStyle="rgba(145,238,244,.45)";g.lineWidth=1;g.beginPath();g.arc(pointer.x,pointer.y,10+energy*7,0,TAU);g.stroke()}
+  stat.textContent=mode.toUpperCase()+"  •  "+(reduced?"REDUCED MOTION":(paused?"PAUSED":"LIVE"))+"  •  "+(remoteSeq>0?"REMOTE LINK":"STANDALONE");
+}
+function frame(ts){if(paused)return;if(!last)last=ts;const dt=Math.min((ts-last)/1000,.05);if(ts-last< (reduced?100:32)){requestAnimationFrame(frame);return}last=ts;elapsed+=dt*(reduced?.15:1);energy=Math.max(.04,energy-dt*.24);draw(elapsed);requestAnimationFrame(frame)}
+requestAnimationFrame(frame);
+})();
+</script></body></html>

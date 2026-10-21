@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Living Tablet — Control Deck</title>
+<style>
+:root{font:16px system-ui,-apple-system,sans-serif;color-scheme:dark;background:#070d1d;color:#f0f7ff}
+*{box-sizing:border-box}body{max-width:780px;margin:auto;padding:24px 18px 60px}
+h1{font-size:clamp(30px,6vw,54px);letter-spacing:-.05em;margin:8px 0}
+p,.small{color:#a9bbd4;line-height:1.55}
+.kicker{font-size:11px;letter-spacing:.18em;color:#7be0de}
+.card{margin:20px 0;padding:22px;background:#111c34;border:1px solid #283d5b;border-radius:24px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:11px}
+button{font:inherit;font-weight:600;cursor:pointer;background:#243655;color:white;border:1px solid #4c6385;border-radius:15px;padding:18px 10px;min-height:56px}
+button:hover,button:focus-visible{outline:2px solid #60e6d5;background:#285173}
+button:active{transform:scale(.98)} input{font:inherit;color:white;background:#0c1730;border:1px solid #4c6385;border-radius:12px;padding:12px;width:100%}
+input[type=range]{accent-color:#66e3d8;padding:0}label{display:block;margin:10px 0 8px}
+.row{display:flex;align-items:center;gap:10px}.row>*{flex:1}
+.status{min-height:24px;color:#8aebc8}.warning{color:#e4c797}
+</style>
+</head><body>
+<div class="kicker">GENERATION 58 / NEXT DESIGN EXPERIMENT</div>
+<h1>Make the tablet feel alive.</h1>
+<p>This is the remote control for the animated screen, not a desktop compositor. Open <a href="/viewer">Viewer</a> on one device and this control page on another. Updates flow over server-sent events; the animation can keep running if control disconnects.</p>
+<section class="card">
+  <label for="token">Control token (shown once in the Mac server terminal)</label>
+  <input id="token" type="password" autocomplete="off" spellcheck="false" placeholder="Paste the demo's control token" aria-describedby="security">
+  <p class="small" id="security">The token stays in this browser tab's memory only. This prototype uses HTTP: for use beyond localhost, put the service behind an encrypted, authenticated network tunnel.</p>
+</section>
+<section class="card"><div class="kicker">EMOTIONS / STATE MACHINE</div>
+  <h2>Choose a scene</h2>
+  <div class="grid">
+    <button data-scene="sleep">🌙 Sleep</button><button data-scene="listen">🎧 Listening</button>
+    <button data-scene="play">✨ Playful</button><button data-scene="storm">⚡ Storm</button>
+    <button data-scene="ocean">🌊 Ocean</button><button data-scene="pulse">💓 Pulse</button>
+  </div>
+</section>
+<section class="card"><div class="kicker">LIVE GPU-STYLE PARAMETERS</div>
+  <label for="hue">Colour shift <output id="hue-value">0°</output></label>
+  <input id="hue" type="range" min="-180" max="180" step="10" value="0">
+  <label for="energy">Energy <output id="energy-value">0.30</output></label>
+  <input id="energy" type="range" min="0" max="2" step=".1" value=".3">
+  <label for="label">What should the tablet say?</label>
+  <input id="label" maxlength="80" placeholder="Hello from the phone…" autocomplete="off">
+  <p><button id="apply" style="width:100%">Update living object</button></p>
+</section>
+<section class="card">
+  <div class="kicker">REMOTE LINK</div><p id="status" class="status" role="status">Connecting…</p>
+  <p id="last" class="small">No state received yet.</p>
+  <p class="small warning">Prototype limitations: the viewer is ordinary HTML Canvas. Native WPE DRM output, hardware acceleration, and the physical tablet touchscreen have not been exercised by this demo.</p>
+</section>
+<script>
+(()=>{"use strict";
+ const $=id=>document.getElementById(id);
+ const presets={
+   sleep:{mode:"breathe",energy:.1,hue:-20,label:"Dreaming peacefully",pulse:false},
+   listen:{mode:"breathe",energy:.7,hue:20,label:"Listening to your voice",pulse:true},
+   play:{mode:"orbit",energy:1.5,hue:65,label:"Let's invent something",pulse:true},
+   storm:{mode:"tide",energy:2,hue:140,label:"Electric storm",pulse:true},
+   ocean:{mode:"tide",energy:.5,hue:-80,label:"Ocean breathing",pulse:false},
+   pulse:{energy:1.2,pulse:true,label:"A pulse from afar"}
+ };
+ let current={};
+ function writeStatus(s){$("status").textContent=s;}
+ async function send(change) {
+   const token=$("token").value;
+   if(!token){writeStatus("Enter the control token first.");$("token").focus();return {error:"missing token"};}
+   try {
+     const res=await fetch("/api/scene",{method:"POST",headers:{"Content-Type":"application/json","X-Scene-Token":token},
+       body:JSON.stringify(change)});
+     const answer=await res.json();
+     if(!res.ok)throw Error(answer.error||("HTTP "+res.status));
+     writeStatus("Command accepted — scene revision "+answer.seq);
+     return answer;
+   } catch(e){writeStatus("Command failed: "+e.message);return {error:e.message};}
+ }
+ document.querySelectorAll("[data-scene]").forEach(b=>
+   b.addEventListener("click",()=>send(presets[b.dataset.scene])));
+ for(const id of ["hue","energy"]){
+   $(id).addEventListener("input",()=>
+     $(id+"-value").textContent=id==="hue"?$(id).value+"°":Number($(id).value).toFixed(2));
+ }
+ $("apply").addEventListener("click",()=>send({hue:Number($("hue").value),
+   energy:Number($("energy").value),label:$("label").value.slice(0,80)}));
+ const sse=new EventSource("/api/stream");
+ sse.onopen=()=>writeStatus("Connected — choose a scene");
+ sse.onmessage=e=>{
+   try{
+     current=JSON.parse(e.data);
+     $("last").textContent="Current: "+current.mode+" · hue "+current.hue+"° · energy "+current.energy+" · revision "+current.seq;
+   } catch(e){console.warn(e);}
+ };
+ sse.onerror=()=>writeStatus("Connection interrupted — reconnecting…");
+ // Browser-agent integration is optional (W3C WebMCP draft); WPE need not support it.
+ // Unlike a blind browser-only tool, this requires the same control token.
+ if(document.modelContext && typeof document.modelContext.registerTool==="function"){
+   document.modelContext.registerTool({
+     name:"set_tablet_animation",title:"Set tablet animation",
+     description:"Set the living tablet's animation mode, hue, energy or short label. Requires a token entered in the control deck.",
+     inputSchema:{type:"object",properties:{
+       mode:{type:"string",enum:["breathe","orbit","tide"]},
+       hue:{type:"integer",minimum:-180,maximum:180},
+       energy:{type:"number",minimum:0,maximum:2},
+       label:{type:"string",maxLength:80},
+       pulse:{type:"boolean"}
+     },additionalProperties:false},
+     async execute(input){const result=await send(input);return {content:[{type:"text",text:JSON.stringify(result)}]};}
+   }).catch(console.warn);
+ }
+})();
+</script>
+</body></html>
