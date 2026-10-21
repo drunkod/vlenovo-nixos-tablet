@@ -1,0 +1,17 @@
+monitor_start_utc=2026-10-21T03:44:24Z
+nix_build_exit_code=0
+test_results:
+flick-unstable>     Finished `release` profile [optimized] target(s) in 22m 04s
+flick-unstable>     Finished `release` profile [optimized] target(s) in 2m 57s
+flick-unstable> test shell::word_prediction::tests::test_predictions ... ok
+flick-unstable> test system::battery_tests::discovers_nonstandard_battery_name_and_ignores_mains ... ok
+flick-unstable> test system::battery_tests::ignores_absent_or_capacityless_batteries ... ok
+flick-unstable> test shell::word_prediction::tests::test_clear_on_space ... ok
+flick-unstable> test touch_effects::tests::test_fisheye_creation ... ok
+flick-unstable> test system::battery_tests::selects_multiple_batteries_deterministically ... ok
+flick-unstable> test touch_effects::tests::test_ripple_conversion ... ok
+flick-unstable> test viewport::tests::test_coordinate_conversion ... ok
+flick-unstable> test viewport::tests::test_viewport_fit ... ok
+flick-unstable> test touch_effects::tests::test_manager ... ok
+flick-unstable> test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
+finished_utc=2026-10-21T03:58:44Z
