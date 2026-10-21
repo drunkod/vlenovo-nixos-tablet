@@ -1,0 +1,429 @@
+{
+  "nodes": {
+    "golden58": {
+      "inputs": {
+        "goldenSource": "goldenSource",
+        "goldenSystem": "goldenSystem",
+        "integration": "integration_2",
+        "nixpkgs": "nixpkgs_4",
+        "rustNixpkgs": "rustNixpkgs"
+      },
+      "locked": {
+        "dir": "experiments/nextgen-images",
+        "lastModified": 1792570992,
+        "narHash": "sha256-GLqLS9Qf+qWDzoAKZ52537wwyxGjNQYz2+mKoQZD1yY=",
+        "owner": "drunkod",
+        "repo": "vlenovo-nixos-tablet",
+        "rev": "8a422fd2acc35caf6a27cf4833491835d35b8165",
+        "type": "github"
+      },
+      "original": {
+        "dir": "experiments/nextgen-images",
+        "owner": "drunkod",
+        "ref": "8a422fd",
+        "repo": "vlenovo-nixos-tablet",
+        "type": "github"
+      }
+    },
+    "goldenSource": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1792562921,
+        "narHash": "sha256-vlIGvgfRJWlwAP05LIehAOj6teG8xVa4OCiWrKBS4Vo=",
+        "owner": "drunkod",
+        "repo": "vlenovo-nixos-tablet",
+        "rev": "393a699b599cf9974990644a944ec0c537a58bb2",
+        "type": "github"
+      },
+      "original": {
+        "owner": "drunkod",
+        "ref": "393a699",
+        "repo": "vlenovo-nixos-tablet",
+        "type": "github"
+      }
+    },
+    "goldenSystem": {
+      "inputs": {
+        "gpuCandidate": "gpuCandidate",
+        "integration": "integration"
+      },
+      "locked": {
+        "dir": "experiments/nixos-gpu-generation",
+        "lastModified": 1792562921,
+        "narHash": "sha256-vlIGvgfRJWlwAP05LIehAOj6teG8xVa4OCiWrKBS4Vo=",
+        "owner": "drunkod",
+        "repo": "vlenovo-nixos-tablet",
+        "rev": "393a699b599cf9974990644a944ec0c537a58bb2",
+        "type": "github"
+      },
+      "original": {
+        "dir": "experiments/nixos-gpu-generation",
+        "owner": "drunkod",
+        "ref": "393a699",
+        "repo": "vlenovo-nixos-tablet",
+        "type": "github"
+      }
+    },
+    "gpuCandidate": {
+      "inputs": {
+        "home-manager": "home-manager",
+        "nixpkgs": "nixpkgs",
+        "nixpkgs-rust": "nixpkgs-rust",
+        "nixpkgs-unstable": "nixpkgs-unstable"
+      },
+      "locked": {
+        "dir": "experiments/flick-build",
+        "lastModified": 1792557950,
+        "narHash": "sha256-ez+YFbZZmRNSq26A4zpMOxp1S5bEMrLOPu1g/hCq9Fo=",
+        "owner": "drunkod",
+        "repo": "vlenovo-nixos-tablet",
+        "rev": "20555d76e065e693a8f2b1f63b8f4fad80f427e1",
+        "type": "github"
+      },
+      "original": {
+        "dir": "experiments/flick-build",
+        "owner": "drunkod",
+        "repo": "vlenovo-nixos-tablet",
+        "rev": "20555d76e065e693a8f2b1f63b8f4fad80f427e1",
+        "type": "github"
+      }
+    },
+    "home-manager": {
+      "inputs": {
+        "nixpkgs": [
+          "golden58",
+          "goldenSystem",
+          "gpuCandidate",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1751990210,
+        "narHash": "sha256-krWErNDl9ggMLSfK00Q2BcoSk3+IRTSON/DiDgUzzMw=",
+        "owner": "nix-community",
+        "repo": "home-manager",
+        "rev": "218da00bfa73f2a61682417efe74549416c16ba6",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "ref": "master",
+        "repo": "home-manager",
+        "type": "github"
+      }
+    },
+    "home-manager_2": {
+      "inputs": {
+        "nixpkgs": [
+          "golden58",
+          "goldenSystem",
+          "integration",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1751990210,
+        "narHash": "sha256-krWErNDl9ggMLSfK00Q2BcoSk3+IRTSON/DiDgUzzMw=",
+        "owner": "nix-community",
+        "repo": "home-manager",
+        "rev": "218da00bfa73f2a61682417efe74549416c16ba6",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "ref": "master",
+        "repo": "home-manager",
+        "type": "github"
+      }
+    },
+    "home-manager_3": {
+      "inputs": {
+        "nixpkgs": [
+          "golden58",
+          "integration",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1751990210,
+        "narHash": "sha256-krWErNDl9ggMLSfK00Q2BcoSk3+IRTSON/DiDgUzzMw=",
+        "owner": "nix-community",
+        "repo": "home-manager",
+        "rev": "218da00bfa73f2a61682417efe74549416c16ba6",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "ref": "master",
+        "repo": "home-manager",
+        "type": "github"
+      }
+    },
+    "integration": {
+      "inputs": {
+        "home-manager": "home-manager_2",
+        "nixpkgs": "nixpkgs_2",
+        "nixpkgs-rust": "nixpkgs-rust_2",
+        "nixpkgs-unstable": "nixpkgs-unstable_2"
+      },
+      "locked": {
+        "lastModified": 1791242004,
+        "narHash": "sha256-5bWVIfNd/xZQFWsLpcNLbiHA4EVuGd788en1Jx39ynk=",
+        "owner": "drunkod",
+        "repo": "vlenovo-nixos-tablet",
+        "rev": "a3dcc0637b92bff7c30bc8914bda6ee1a3f50281",
+        "type": "github"
+      },
+      "original": {
+        "owner": "drunkod",
+        "repo": "vlenovo-nixos-tablet",
+        "rev": "a3dcc0637b92bff7c30bc8914bda6ee1a3f50281",
+        "type": "github"
+      }
+    },
+    "integration_2": {
+      "inputs": {
+        "home-manager": "home-manager_3",
+        "nixpkgs": "nixpkgs_3",
+        "nixpkgs-rust": "nixpkgs-rust_3",
+        "nixpkgs-unstable": "nixpkgs-unstable_3"
+      },
+      "locked": {
+        "lastModified": 1791242004,
+        "narHash": "sha256-5bWVIfNd/xZQFWsLpcNLbiHA4EVuGd788en1Jx39ynk=",
+        "owner": "drunkod",
+        "repo": "vlenovo-nixos-tablet",
+        "rev": "a3dcc0637b92bff7c30bc8914bda6ee1a3f50281",
+        "type": "github"
+      },
+      "original": {
+        "owner": "drunkod",
+        "repo": "vlenovo-nixos-tablet",
+        "rev": "a3dcc0637b92bff7c30bc8914bda6ee1a3f50281",
+        "type": "github"
+      }
+    },
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1751943650,
+        "narHash": "sha256-7orTnNqkGGru8Je6Un6mq1T8YVVU/O5kyW4+f9C1mZQ=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "88983d4b665fb491861005137ce2b11a9f89f203",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "nixos-25.05",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs-rust": {
+      "locked": {
+        "lastModified": 1791048980,
+        "narHash": "sha256-KgItSKML8Xvte0B7/uGnBDsYzSnnKHcOaiUbgWBXLXw=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "a7868a727837f3c09cee2ce0ca671c76b1589fed",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs-rust_2": {
+      "locked": {
+        "lastModified": 1791048980,
+        "narHash": "sha256-KgItSKML8Xvte0B7/uGnBDsYzSnnKHcOaiUbgWBXLXw=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "a7868a727837f3c09cee2ce0ca671c76b1589fed",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs-rust_3": {
+      "locked": {
+        "lastModified": 1791048980,
+        "narHash": "sha256-KgItSKML8Xvte0B7/uGnBDsYzSnnKHcOaiUbgWBXLXw=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "a7868a727837f3c09cee2ce0ca671c76b1589fed",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs-unstable": {
+      "locked": {
+        "lastModified": 1751984180,
+        "narHash": "sha256-LwWRsENAZJKUdD3SpLluwDmdXY9F45ZEgCb0X+xgOL0=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "9807714d6944a957c2e036f84b0ff8caf9930bc0",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs-unstable_2": {
+      "locked": {
+        "lastModified": 1751984180,
+        "narHash": "sha256-LwWRsENAZJKUdD3SpLluwDmdXY9F45ZEgCb0X+xgOL0=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "9807714d6944a957c2e036f84b0ff8caf9930bc0",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs-unstable_3": {
+      "locked": {
+        "lastModified": 1751984180,
+        "narHash": "sha256-LwWRsENAZJKUdD3SpLluwDmdXY9F45ZEgCb0X+xgOL0=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "9807714d6944a957c2e036f84b0ff8caf9930bc0",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_2": {
+      "locked": {
+        "lastModified": 1751943650,
+        "narHash": "sha256-7orTnNqkGGru8Je6Un6mq1T8YVVU/O5kyW4+f9C1mZQ=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "88983d4b665fb491861005137ce2b11a9f89f203",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "nixos-25.05",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_3": {
+      "locked": {
+        "lastModified": 1751943650,
+        "narHash": "sha256-7orTnNqkGGru8Je6Un6mq1T8YVVU/O5kyW4+f9C1mZQ=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "88983d4b665fb491861005137ce2b11a9f89f203",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "nixos-25.05",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_4": {
+      "locked": {
+        "lastModified": 1751943650,
+        "narHash": "sha256-7orTnNqkGGru8Je6Un6mq1T8YVVU/O5kyW4+f9C1mZQ=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "88983d4b665fb491861005137ce2b11a9f89f203",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "88983d4b665fb491861005137ce2b11a9f89f203",
+        "type": "github"
+      }
+    },
+    "root": {
+      "inputs": {
+        "golden58": "golden58",
+        "webPkgs": "webPkgs",
+        "webRecipe": "webRecipe"
+      }
+    },
+    "rustNixpkgs": {
+      "locked": {
+        "lastModified": 1791048980,
+        "narHash": "sha256-KgItSKML8Xvte0B7/uGnBDsYzSnnKHcOaiUbgWBXLXw=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "a7868a727837f3c09cee2ce0ca671c76b1589fed",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "a7868a727837f3c09cee2ce0ca671c76b1589fed",
+        "type": "github"
+      }
+    },
+    "webPkgs": {
+      "locked": {
+        "lastModified": 1792502884,
+        "narHash": "sha256-IoNisKcGbUjdd45qCqywGMCYmZ5EnkxezvLII0FWwNA=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "02c087f3fe673c9e317f206a627cb6b910336dbe",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "02c087f3fe673c9e317f206a627cb6b910336dbe",
+        "type": "github"
+      }
+    },
+    "webRecipe": {
+      "inputs": {
+        "nixpkgs": [
+          "webPkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1788533704,
+        "narHash": "sha256-LgXmw1o0e4pGo6woekmxfzJZJcS6VGXpIsppq9JRJK4=",
+        "owner": "eval-exec",
+        "repo": "nix-wpe-webkit",
+        "rev": "f00a6fa7b7fe678bba8588edc21e233ac1eedce8",
+        "type": "github"
+      },
+      "original": {
+        "owner": "eval-exec",
+        "repo": "nix-wpe-webkit",
+        "rev": "f00a6fa7b7fe678bba8588edc21e233ac1eedce8",
+        "type": "github"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}
