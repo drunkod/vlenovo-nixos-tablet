@@ -61,6 +61,31 @@
           ];
         });
 
+      # Independent NixOS-ready wrapper of the exact fifth source and assets.
+      packages.x86_64-linux.flick-qt-egl-qml-system =
+        let
+          unwrapped = flickPackages.unwrapped.overrideAttrs (old: {
+            patches = old.patches ++ [
+              ./patches/flick/0008-skip-qml-obscured-slint-render.patch
+              ./patches/flick/0009-native-drm-validated-dmabuf.patch
+              ./patches/flick/0010-enable-qt-wl-drm-egl-import.patch
+            ];
+          });
+        in pkgs.symlinkJoin {
+          name = "flick-qt-egl-qml-system";
+          paths = [ unwrapped flickPackages.assets ];
+          nativeBuildInputs = [ pkgs.makeWrapper ];
+          postBuild = ''
+            wrapProgram "$out/bin/flick"               --set FLICK_ROOT "$out/share/flick"               --prefix LD_LIBRARY_PATH : "${pkgs.lib.makeLibraryPath [
+                pkgs.wayland pkgs.libxkbcommon pkgs.libglvnd pkgs.libgbm
+              ]}:/run/opengl-driver/lib"
+          '';
+          passthru = {
+            inherit unwrapped;
+            assets = flickPackages.assets;
+          };
+        };
+
       # Same exact source as fifth production candidate. Deliberately separate
       # derivation that compiles and executes the Rust unit-test harness.
       # Does not modify or activate the previously built package.
