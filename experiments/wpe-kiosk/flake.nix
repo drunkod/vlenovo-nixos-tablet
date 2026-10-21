@@ -31,6 +31,7 @@
           (cmakeBool "ENABLE_INTROSPECTION" false)
           (cmakeBool "ENABLE_MINIBROWSER" false)
           (cmakeBool "ENABLE_SPEECH_SYNTHESIS" false)
+          (cmakeBool "ENABLE_SPELLCHECK" false)
           (cmakeBool "ENABLE_GAMEPAD" false)
           (cmakeBool "ENABLE_WEBXR" false)
           (cmakeBool "ENABLE_API_TESTS" false)
