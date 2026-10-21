@@ -60,5 +60,19 @@
             ./patches/flick/0010-enable-qt-wl-drm-egl-import.patch
           ];
         });
+
+      # Same exact source as fifth production candidate. Deliberately separate
+      # derivation that compiles and executes the Rust unit-test harness.
+      # Does not modify or activate the previously built package.
+      packages.x86_64-linux.flick-qt-egl-qml-tests =
+        flickPackages.unwrapped.overrideAttrs (old: {
+          patches = old.patches ++ [
+            ./patches/flick/0008-skip-qml-obscured-slint-render.patch
+            ./patches/flick/0009-native-drm-validated-dmabuf.patch
+            ./patches/flick/0010-enable-qt-wl-drm-egl-import.patch
+          ];
+          doCheck = true;
+          cargoTestFlags = [ "--bin" "flick" ];
+        });
     };
 }
