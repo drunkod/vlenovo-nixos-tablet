@@ -20,11 +20,12 @@ base=/run/vlenovo-flick-vm-guard-probe
 state="$base/state"
 runner="$base/rollback.sh"
 timer_name=vlenovo-flick-vm-guard-timer
+failure_timer=vlenovo-flick-vm-guard-failure-timer
 [[ ! -e "$unit" && ! -e "$dropdir" && ! -e "$base" ]] || {
  echo 'Existing probe state found; refusing to overwrite' >&2; exit 4;
 }
 cleanup() {
-  systemctl stop "$timer_name.timer" "$unit_name" >/dev/null 2>&1 || true
+  systemctl stop "$timer_name.timer" "$failure_timer.timer" "$unit_name" >/dev/null 2>&1 || true
   rm -f -- "$override" "$unit" "$runner" "$state"     "$base/no-override.log" "$base/unmarked.log" "$base/symlink.log"
   rmdir "$dropdir" "$base" >/dev/null 2>&1 || true
   systemctl daemon-reload >/dev/null
@@ -116,3 +117,34 @@ echo "SYSTEM_LEVEL_TIMER_RESTORED_ORIGINAL=PASS"
 echo "TIMER_RESULT=$(systemctl show "$timer_name.service" -P Result)"
 echo "AFTER_UNIT_STATE=$(systemctl is-active "$unit_name")"
 echo "TEST_VM_SYSTEM_MANAGER_ROLLBACK=PASS"
+
+# Intentionally fail the experimental unit, then prove the recovery timer
+# clears the failure and restores the still-valid original service.
+cat > "$override" <<EOF
+# VLENOVO_FLICK_GPU_TRIAL=1
+[Service]
+ExecStart=
+ExecStart=/usr/bin/false
+EOF
+systemctl daemon-reload
+set +e
+systemctl restart "$unit_name" >/dev/null 2>&1
+failed_rc=$?
+set -e
+[[ "$failed_rc" -ne 0 ]] || { echo "FAILED_RESTART_NOT_DETECTED"; exit 8; }
+systemctl is-failed --quiet "$unit_name"
+echo "SYSTEM_LEVEL_EXPERIMENTAL_CRASH_INJECTED=PASS"
+systemd-run --quiet --unit="$failure_timer" --on-active=8s   --timer-property=AccuracySec=1s "$runner"
+systemctl is-active --quiet "$failure_timer.timer"
+recovered=no
+for _ in $(seq 1 32); do
+  if [[ ! -e "$override" ]] && [[ "$(cat "$state")" == original ]] &&
+     systemctl is-active --quiet "$unit_name"; then
+    recovered=yes; break
+  fi
+  sleep 1
+done
+[[ "$recovered" == yes ]] || { echo "FAILED_SERVICE_RECOVERY_NOT_COMPLETED"; exit 8; }
+echo "FAILED_SERVICE_RECOVERY_TIMER_RESULT=$(systemctl show "$failure_timer.service" -P Result)"
+echo "FAILED_SERVICE_RECOVERY_AFTER_UNIT=$(systemctl is-active "$unit_name")"
+echo "TEST_VM_SYSTEM_MANAGER_FAILED_SERVICE_RECOVERY=PASS"
