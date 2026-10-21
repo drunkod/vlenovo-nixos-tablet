@@ -1,0 +1,69 @@
+name: Gen59 WPE 2.54 native x86_64 build
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - lenovo-gen59-wpe-living-nebula
+    paths:
+      - ".github/workflows/gen59-wpe-x86-build.yml"
+      - "experiments/wpe-kiosk/flake.nix"
+      - "experiments/wpe-kiosk/flake.lock"
+
+permissions:
+  contents: read
+
+jobs:
+  wpe-x86:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Show native builder resources
+        run: |
+          uname -m
+          nproc
+          free -h
+          df -h /
+      - name: Install Nix (native x86_64)
+        uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+            sandbox = false
+            max-jobs = 2
+            cores = 2
+      - name: Build WPE 2.54.1 direct DRM outputs
+        run: |
+          set -euo pipefail
+          cd experiments/wpe-kiosk
+          nix build .#packages.x86_64-linux.wpe --no-link -L --print-out-paths
+          drv=$(nix eval --raw .#packages.x86_64-linux.wpe.drvPath)
+          nix-store --query --outputs "$drv" > "$RUNNER_TEMP/wpe-store-paths.txt"
+          while IFS= read -r path; do
+            nix-store --verify-path "$path"
+          done < "$RUNNER_TEMP/wpe-store-paths.txt"
+          nix-store --query --requisites $(cat "$RUNNER_TEMP/wpe-store-paths.txt") > "$RUNNER_TEMP/wpe-requisites.txt"
+          cat "$RUNNER_TEMP/wpe-store-paths.txt"
+      - name: Export exact Nix store outputs, not the entire cache
+        run: |
+          set -euo pipefail
+          command -v zstd || sudo apt-get install -y zstd
+          nix-store --export $(cat "$RUNNER_TEMP/wpe-store-paths.txt") |
+            zstd -T2 -3 -o "$RUNNER_TEMP/wpe-outputs.nar.zst"
+          zstd -t "$RUNNER_TEMP/wpe-outputs.nar.zst"
+          (cd "$RUNNER_TEMP" && sha256sum wpe-outputs.nar.zst > wpe-outputs.sha256)
+          ls -lh "$RUNNER_TEMP/wpe-outputs.nar.zst"
+      - name: Save reproducible WPE binary outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: gen59-wpe2541-nix-outputs
+          path: |
+            ${{ runner.temp }}/wpe-outputs.nar.zst
+            ${{ runner.temp }}/wpe-outputs.sha256
+            ${{ runner.temp }}/wpe-store-paths.txt
+            ${{ runner.temp }}/wpe-requisites.txt
+          compression-level: 0
+          retention-days: 7

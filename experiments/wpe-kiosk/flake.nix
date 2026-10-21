@@ -17,6 +17,10 @@
       oldPkgs = oldSystem.pkgs;
       wpe = pkgsWeb.wpewebkit.overrideAttrs (final: prev: {
         version = "2.54.1";
+        # The upstream overlay expects a devdoc output, but this kiosk disables
+        # documentation. A missing devdoc would fail the Nix build at the end.
+        outputs = [ "out" "dev" ];
+        postFixup = "";
         src = pkgsWeb.fetchurl {
           url = "https://wpewebkit.org/releases/wpewebkit-2.54.1.tar.xz";
           hash = "sha256-Dei9+6AR+c1jupqRcfpgON0sCCN4lPQIKru4IfKdP+k=";
