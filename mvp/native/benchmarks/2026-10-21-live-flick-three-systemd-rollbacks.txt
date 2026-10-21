@@ -1,0 +1,17 @@
+CHECK_UTC=2026-10-21T04:30:37Z
+MainPID=18715
+ExecStart={ path=/nix/store/mff55q54jy9x5jifkzy5fhriqshd90ng-flick-unstable-2026-01-04/bin/flick ; argv[]=/nix/store/mff55q54jy9x5jifkzy5fhriqshd90ng-flick-unstable-2026-01-04/bin/flick ; ignore_errors=no ; start_time=[Wed 2026-10-21 04:28:26 UTC] ; stop_time=[n/a] ; pid=18715 ; code=(null) ; status=0/0 }
+ActiveState=active
+FragmentPath=/etc/systemd/system/flick.service
+DropInPaths=
+Result=success
+Result=success
+Result=success
+active
+active
+active
+active
+/nix/store/91jbl1irxi6qjx0252s00mlz8ass3yin-nixos-system-vlenovo-25.05.20250708.88983d4
+/nix/store/91jbl1irxi6qjx0252s00mlz8ass3yin-nixos-system-vlenovo-25.05.20250708.88983d4
+lrwxrwxrwx 38 root root 71 Jan  1  1970 /nix/var/nix/profiles/system-55-link/initrd -> /nix/store/8hla2afa7n9vgs76l3558wy7gywxv8gv-initrd-linux-6.12.36/initrd
+lrwxrwxrwx 53 root root 65 Jan  1  1970 /nix/var/nix/profiles/system-55-link/kernel -> /nix/store/mifh5p043cma8pbywl2lvlkp1z1bd8i2-linux-6.12.36/bzImage
