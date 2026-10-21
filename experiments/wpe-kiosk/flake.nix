@@ -55,7 +55,7 @@
         src = ./kiosk.c;
         dontUnpack = true;
         nativeBuildInputs = [ pkgsWeb.pkg-config pkgsWeb.makeWrapper ];
-        buildInputs = [ wpe pkgsWeb.glib ];
+        buildInputs = [ wpe pkgsWeb.glib pkgsWeb.libsoup_3 pkgsWeb.libxkbcommon ];
         buildPhase = ''
           runHook preBuild
           $CC "$src" -o lenovo-wpe-kiosk $(pkg-config --cflags --libs wpe-webkit-2.0 gio-unix-2.0)
