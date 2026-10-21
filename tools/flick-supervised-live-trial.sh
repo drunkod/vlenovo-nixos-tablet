@@ -28,7 +28,12 @@ case "$mode" in
     elf_sha=4c0d8a75d70f727092522cc82941f12d6421b1b0c44b26e0f7a1a4cbe054006d
     launcher="$builds/.launch-flick-qt-egl-qml-experimental"
     launcher_sha=03c4d9c73be4475648feae827d53a31f55d7893c399dd0e99be661448c430e22 ;;
-  *) echo "Only separately tested qt-egl or qt-egl-qml accepted" >&2; exit 2 ;;
+  qt-egl-qml-soak)
+    binary="$builds/flick-qt-egl-qml-experimental-x86_64"
+    elf_sha=4c0d8a75d70f727092522cc82941f12d6421b1b0c44b26e0f7a1a4cbe054006d
+    launcher="$builds/.launch-flick-qt-egl-qml-experimental"
+    launcher_sha=03c4d9c73be4475648feae827d53a31f55d7893c399dd0e99be661448c430e22 ;;
+  *) echo "Only qt-egl, qt-egl-qml or qt-egl-qml-soak accepted" >&2; exit 2 ;;
 esac
 [[ -f "$binary" && -x "$binary" && ! -L "$binary" ]] || exit 78
 [[ -f "$launcher" && -x "$launcher" && ! -L "$launcher" ]] || exit 78
@@ -46,7 +51,9 @@ grep -Fxq "OVERRIDE=$override" "$rollback"
 timer="vlenovo-flick-trial-rollback-$mode"
 if systemctl is-active --quiet "$timer.timer"; then echo 'Existing rollback timer already active'; exit 78; fi
 mkdir -p "$dropdir"
-systemd-run --quiet --unit="$timer" --on-active=145s \
+rollback_delay=145s
+[[ "$mode" == qt-egl-qml-soak ]] && rollback_delay=360s
+systemd-run --quiet --unit="$timer" --on-active="$rollback_delay" \
     --timer-property=AccuracySec=1s "$rollback"
 systemctl is-active --quiet "$timer.timer" || { echo 'Rollback timer not active'; exit 78; }
 cat > "$override" <<EOF
