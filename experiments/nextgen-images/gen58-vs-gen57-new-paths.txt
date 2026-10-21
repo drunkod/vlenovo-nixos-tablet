@@ -1,0 +1,14 @@
+/nix/store/09qndfj9jf1r7i14nan1bsx7i763d4jp-etc
+/nix/store/3ns0ac33wxqxgrpfkl303h1s6zrww2xy-lenovo-slint-kms-gpu-0.1.0
+/nix/store/6mx70c7wm276rax10m7hcpzdsli2ndzb-nixos-system-vlenovo-25.05.20250708.88983d4
+/nix/store/6xk9wvk45rddzs98333wh9wj1r1mvijy-users-groups.json
+/nix/store/9kjixsadbmy06cq8jrd94msbhmmv4xr8-user-units
+/nix/store/f1k4b4yj35hq7h2iczc8l2f50dzm6234-unit-dbus.service
+/nix/store/gk4ccp9xh3xm4n8gblpxb241x0dmcpwh-X-Restart-Triggers-polkit
+/nix/store/h0xz43bvfrs4hqq40a0llayad61bdr5q-system-units
+/nix/store/magwh9mnn1p6yf072bc45bg81rvc7w15-unit-dbus.service
+/nix/store/n078m5mdif460q8yfqdjn523b6ya0hir-dbus-1
+/nix/store/pc673m0kgzzmamv2wf2kwnjg9rp6cm3l-unit-polkit.service
+/nix/store/srxyl3qcsv1axj7lx3xk4fqz93snlral-unit-lenovo-slint-dashboard.service
+/nix/store/vjs6kjx3ysn84ir77dqagpk23ysgc3mj-system-path
+/nix/store/ydwq9p5sprgfjisbi0ibh2apqq6zs8ci-X-Restart-Triggers-dbus
