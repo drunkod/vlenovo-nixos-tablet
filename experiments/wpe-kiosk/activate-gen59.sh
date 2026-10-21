@@ -32,6 +32,7 @@ echo "GEN59_CANDIDATE=$SYSTEM"
 echo "GEN58_RECOVERY=$BASE"
 if [ "$MODE" = check ]; then echo PREFLIGHT_OK; exit 0; fi
 [ "$MODE" = activate ] || { echo 'Mode must be check|activate' >&2; exit 1; }
+[ "$SYSTEM" != "$BASE" ] || { echo "Refusing to register gen58 again" >&2; exit 1; }
 [ -x /run/lenovo-gen59-restore.sh ] || { echo 'Missing independent rollback script in /run' >&2; exit 1; }
 systemd-run --unit=gen59-rollback --on-active=8m /run/lenovo-gen59-restore.sh
 systemctl is-active --quiet gen59-rollback.timer
