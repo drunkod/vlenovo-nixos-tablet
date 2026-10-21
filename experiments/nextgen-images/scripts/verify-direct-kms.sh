@@ -39,4 +39,4 @@ ps -p "$pid" -o pid,comm,etime,%cpu,rss
 free -m
 printf '%s\n' '=== possible GPU hang ==='
 journalctl -k -b --no-pager | grep -Ei 'GPU HANG|i915.*reset' | tail -4 || :
-printf '%s\n' 'REMOTE_CHECKS_PASSED (physical finger taps and visible pixels still need confirmation)'
+printf '%s\n' 'REMOTE_CHECKS_PASSED (UI action logs can provide interaction evidence; physical position/drag/rotation still need confirmation)'
