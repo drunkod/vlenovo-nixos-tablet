@@ -25,12 +25,22 @@ static gboolean on_load_failed(WebKitWebView *view, WebKitLoadEvent event,
 }
 int main(int argc, char **argv) {
   const char *uri = argc > 1 ? argv[1] : "http://127.0.0.1:17858/viewer";
+  fprintf(stderr, "GEN59_DEBUG: entering main, about to add Nix store sandbox path\n");
+  fflush(stderr);
   g_autoptr(GMainLoop) loop = g_main_loop_new(NULL, FALSE);
   // WPE bubblewrap subprocesses must see Nix-built interpreters, libraries
   // and xdg-dbus-proxy. Expose the immutable Nix store READ-ONLY; keep the
   // WebKit security sandbox enabled (do not use WEBKIT_DISABLE_SANDBOX).
   webkit_web_context_add_path_to_sandbox(webkit_web_context_get_default(), "/nix/store", TRUE);
+  // Mesa Crocus DRI/GBM entry points are exposed by NixOS through /run.
+  // WebKit WebProcess needs that directory read-only to initialize its EGL
+  // PlatformDisplay inside Bubblewrap; DRM render nodes are bound separately.
+  webkit_web_context_add_path_to_sandbox(webkit_web_context_get_default(), "/run/opengl-driver", TRUE);
+  fprintf(stderr, "GEN59_DEBUG: sandbox path added, constructing web view\n");
+  fflush(stderr);
   g_autoptr(WebKitWebView) view = WEBKIT_WEB_VIEW(g_object_new(WEBKIT_TYPE_WEB_VIEW, NULL));
+  fprintf(stderr, "GEN59_DEBUG: web view constructed\n");
+  fflush(stderr);
   if (!view) {
     fprintf(stderr,"WPE: failed to construct WebKitWebView\n");
     return EXIT_FAILURE;

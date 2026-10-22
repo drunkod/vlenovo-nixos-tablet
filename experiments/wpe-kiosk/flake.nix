@@ -73,6 +73,13 @@
         '';
       };
       module = { config, lib, pkgs, ... }: {
+        # This experimental GPU/WebProcess integration previously generated
+        # multi-gigabyte crash dumps on slow eMMC and caused severe I/O stalls.
+        # Disable core dump storage only while this candidate generation runs.
+        systemd.coredump.extraConfig = ''
+          Storage=none
+          ProcessSizeMax=0
+        '';
         # Keep the known-working generation-58 direct-KMS Slint executable in
         # the closure as an emergency fallback; do not start it by default.
         systemd.services.lenovo-slint-dashboard.wantedBy = lib.mkForce [ ];
@@ -135,6 +142,7 @@
             RestartSec = 5;
             MemoryHigh = "800M";
             MemoryMax = "950M";
+            LimitCORE = 0;
             # PAM login grants CAP_WAKE_ALARM, which bubblewrap refuses.
             # This service does not need privileges; drop the capability.
             CapabilityBoundingSet = "~CAP_WAKE_ALARM";
